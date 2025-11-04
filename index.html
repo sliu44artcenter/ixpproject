@@ -3,10 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Website</title>
+    <title>Forest Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #2c5530;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .story-text {
+            background: #f9f9f9;
+            border-left: 4px solid #4a7c59;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            line-height: 1.8;
+            font-size: 1.1em;
+            color: #333;
+            min-height: 150px;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #4a7c59 0%, #5d9c6c 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'Georgia', serif;
+        }
+
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #5d9c6c 0%, #4a7c59 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .choice-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #7c4a4a 0%, #9c5d5d 100%);
+            margin-top: 20px;
+        }
+
+        .restart-btn:hover {
+            background: linear-gradient(135deg, #9c5d5d 0%, #7c4a4a 100%);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .ending {
+            font-weight: bold;
+            color: #2c5530;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <h1>hello</h1>
-    <img src="微信图片_20250930180915.jpg" alt="Uploaded Image" style="max-width: 100%; height: auto;">
+    <div class="game-container">
+        <h1>🌲 The Enchanted Forest 🌲</h1>
+
+        <div class="story-text" id="storyText">
+            You stand at the edge of an ancient forest. The trees tower above you, their branches forming a canopy that filters the sunlight into dancing beams. Three distinct paths lie before you, each leading deeper into the woods.
+        </div>
+
+        <div class="choices" id="choices">
+            <button class="choice-btn" onclick="choosePath('left')">
+                Take the left path, where you hear the sound of running water
+            </button>
+            <button class="choice-btn" onclick="choosePath('middle')">
+                Take the middle path, where colorful butterflies flutter
+            </button>
+            <button class="choice-btn" onclick="choosePath('right')">
+                Take the right path, where mysterious glowing mushrooms grow
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const story = {
+            start: {
+                text: "You stand at the edge of an ancient forest. The trees tower above you, their branches forming a canopy that filters the sunlight into dancing beams. Three distinct paths lie before you, each leading deeper into the woods.",
+                choices: [
+                    { text: "Take the left path, where you hear the sound of running water", next: "left" },
+                    { text: "Take the middle path, where colorful butterflies flutter", next: "middle" },
+                    { text: "Take the right path, where mysterious glowing mushrooms grow", next: "right" }
+                ]
+            },
+            left: {
+                text: "You follow the sound of water and discover a crystal-clear stream. A small wooden bridge crosses it, but you notice something glittering beneath the water's surface. An old woman sits by the stream, offering you a cup of tea.",
+                choices: [
+                    { text: "Accept the tea and talk with the old woman", next: "leftTea" },
+                    { text: "Dive into the stream to retrieve the glittering object", next: "leftDive" },
+                    { text: "Cross the bridge and continue deeper into the forest", next: "leftBridge" }
+                ]
+            },
+            middle: {
+                text: "The butterflies lead you to a sunlit clearing where wildflowers bloom in every color imaginable. In the center stands a magnificent oak tree with a door carved into its trunk. You hear soft singing coming from within.",
+                choices: [
+                    { text: "Knock on the tree door politely", next: "middleKnock" },
+                    { text: "Gather some flowers before investigating", next: "middleFlowers" },
+                    { text: "Walk around the tree to see what's behind it", next: "middleAround" }
+                ]
+            },
+            right: {
+                text: "The glowing mushrooms illuminate your path with an ethereal blue light. You come across a clearing where a white deer stands, watching you with intelligent eyes. It seems to want you to follow it.",
+                choices: [
+                    { text: "Follow the white deer", next: "rightFollow" },
+                    { text: "Collect some of the glowing mushrooms", next: "rightMushrooms" },
+                    { text: "Stay still and try to communicate with the deer", next: "rightCommunicate" }
+                ]
+            },
+            leftTea: {
+                text: "The old woman smiles warmly as you accept her tea. She tells you ancient tales of the forest and reveals she is the Guardian of the Stream. As thanks for your kindness, she grants you the gift of understanding nature's language. Birds and animals now share their wisdom with you, and you become a renowned forest guide, helping lost travelers find their way.\n\n<div class='ending'>THE END - The Path of Wisdom</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            leftDive: {
+                text: "You plunge into the cold water and grab the shimmering object - it's a magic mirror! But when you surface, you find yourself in a different part of the forest, decades in the past. You decide to stay and protect the young forest, becoming its first guardian and ensuring its survival for future generations.\n\n<div class='ending'>THE END - The Guardian's Choice</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            leftBridge: {
+                text: "You cross the bridge and venture deeper. The path leads you to a hidden grove where rare medicinal herbs grow. You spend years studying them and become a master healer, using the forest's gifts to cure ailments and help people from far and wide.\n\n<div class='ending'>THE END - The Healer's Journey</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            middleKnock: {
+                text: "A tiny fairy opens the door and invites you inside. The tree is hollow and filled with a magical community of forest sprites. They're celebrating a festival and welcome you as their honored guest. You spend an enchanted evening learning their magic, and they teach you how to grow the most beautiful gardens. You return home and create magnificent gardens that bring joy to everyone.\n\n<div class='ending'>THE END - The Gardener's Magic</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            middleFlowers: {
+                text: "As you gather flowers, you notice each one has unique magical properties. The singing from the tree grows louder, and you realize the flowers are singing back! You've discovered the secret of harmonizing with nature. You become a renowned botanist who can communicate with plants and help them thrive in any environment.\n\n<div class='ending'>THE END - The Flower Whisperer</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            middleAround: {
+                text: "Behind the tree, you find a portal to the realm of eternal spring. You step through and discover a paradise where it's always the perfect day. You become the keeper of this realm, occasionally bringing worthy souls to visit this peaceful sanctuary.\n\n<div class='ending'>THE END - The Keeper of Spring</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            rightFollow: {
+                text: "The deer leads you to a moonlit glade where other magical creatures gather. They reveal that you have been chosen to be the Ambassador between the human and magical worlds. You spend your life building bridges between both realms, bringing peace and understanding.\n\n<div class='ending'>THE END - The Ambassador's Destiny</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            rightMushrooms: {
+                text: "The mushrooms' glow intensifies as you collect them. You discover they can create beautiful light that never fades. You become an artist, using these living lights to create breathtaking installations that inspire wonder and bring communities together.\n\n<div class='ending'>THE END - The Light Artist</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            },
+            rightCommunicate: {
+                text: "You stand still and open your heart. The deer touches its nose to your forehead, and suddenly you can sense the emotions of all living things. This gift of empathy allows you to become a mediator who can resolve conflicts and bring harmony wherever you go.\n\n<div class='ending'>THE END - The Empath's Gift</div>",
+                choices: [{ text: "Start Over", next: "start" }]
+            }
+        };
+
+        let currentScene = 'start';
+
+        function choosePath(choice) {
+            currentScene = choice;
+            updateScene();
+        }
+
+        function updateScene() {
+            const scene = story[currentScene];
+            const storyText = document.getElementById('storyText');
+            const choicesDiv = document.getElementById('choices');
+
+            // Fade out
+            storyText.style.opacity = '0';
+            choicesDiv.style.opacity = '0';
+
+            setTimeout(() => {
+                // Update content
+                storyText.innerHTML = scene.text;
+                choicesDiv.innerHTML = '';
+
+                scene.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.className = 'choice-btn';
+                    if (choice.next === 'start') {
+                        button.className += ' restart-btn';
+                    }
+                    button.textContent = choice.text;
+                    button.onclick = () => {
+                        currentScene = choice.next;
+                        updateScene();
+                    };
+                    choicesDiv.appendChild(button);
+                });
+
+                // Fade in
+                storyText.style.opacity = '1';
+                choicesDiv.style.opacity = '1';
+            }, 300);
+        }
+
+        // Add smooth transitions
+        document.getElementById('storyText').style.transition = 'opacity 0.3s';
+        document.getElementById('choices').style.transition = 'opacity 0.3s';
+    </script>
 </body>
 </html>
