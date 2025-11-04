@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Adventure</title>
+    <title>The Witch's Forest - Interactive Story</title>
     <style>
         * {
             margin: 0;
@@ -13,53 +13,96 @@
 
         body {
             font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0f2e 50%, #0d1f1a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            transition: background 1s ease;
         }
 
-        .game-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
+        body.danger {
+            background: linear-gradient(135deg, #1a0000 0%, #2d0a0a 50%, #1a0000 100%);
+        }
+
+        body.hope {
+            background: linear-gradient(135deg, #0a1a0a 0%, #1a2d1a 50%, #0f1f0f 100%);
+        }
+
+        body.cursed {
+            background: linear-gradient(135deg, #1a001a 0%, #2d0a2d 50%, #1a001a 100%);
+        }
+
+        .container {
+            max-width: 800px;
             width: 100%;
+            background: rgba(10, 10, 20, 0.9);
+            border: 2px solid #4a0e4e;
+            border-radius: 15px;
             padding: 40px;
-            animation: fadeIn 0.5s ease-in;
+            box-shadow: 0 0 40px rgba(138, 43, 226, 0.3),
+                        inset 0 0 30px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 1s ease;
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            color: #2c5530;
+            color: #9d4edd;
             text-align: center;
-            margin-bottom: 30px;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #7b2cbf;
+            text-align: center;
+            font-size: 1em;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .story-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #5a189a;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            min-height: 200px;
         }
 
         .story-text {
-            background: #f9f9f9;
-            border-left: 4px solid #4a7c59;
-            padding: 25px;
-            margin-bottom: 30px;
-            border-radius: 8px;
+            color: #e0aaff;
+            font-size: 1.2em;
             line-height: 1.8;
-            font-size: 1.1em;
-            color: #333;
-            min-height: 150px;
+            text-align: justify;
+            animation: textFade 0.8s ease;
+        }
+
+        @keyframes textFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .feedback {
+            color: #ff6b9d;
+            font-style: italic;
+            font-size: 0.95em;
+            margin-top: 15px;
+            text-align: center;
+            min-height: 20px;
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
 
         .choices {
@@ -69,36 +112,63 @@
         }
 
         .choice-btn {
-            background: linear-gradient(135deg, #4a7c59 0%, #5d9c6c 100%);
-            color: white;
-            border: none;
-            padding: 15px 25px;
+            background: linear-gradient(135deg, #240046 0%, #3c096c 100%);
+            color: #e0aaff;
+            border: 2px solid #5a189a;
+            padding: 18px 25px;
             font-size: 1.1em;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
             font-family: 'Georgia', serif;
         }
 
+        .choice-btn::before {
+            content: '→';
+            position: absolute;
+            left: 15px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
         .choice-btn:hover {
-            background: linear-gradient(135deg, #5d9c6c 0%, #4a7c59 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #3c096c 0%, #5a189a 100%);
+            transform: translateX(10px);
+            box-shadow: 0 0 25px rgba(157, 78, 221, 0.6);
+            border-color: #9d4edd;
+            padding-left: 40px;
+        }
+
+        .choice-btn:hover::before {
+            opacity: 1;
+            left: 20px;
         }
 
         .choice-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: translateX(10px) scale(0.98);
         }
 
         .restart-btn {
-            background: linear-gradient(135deg, #7c4a4a 0%, #9c5d5d 100%);
-            margin-top: 20px;
+            background: linear-gradient(135deg, #006400 0%, #228b22 100%);
+            color: #ffffff;
+            border: 2px solid #32cd32;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
         }
 
         .restart-btn:hover {
-            background: linear-gradient(135deg, #9c5d5d 0%, #7c4a4a 100%);
+            background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
+            box-shadow: 0 0 25px rgba(50, 205, 50, 0.6);
+            transform: scale(1.05);
         }
 
         .hidden {
@@ -106,150 +176,263 @@
         }
 
         .ending {
-            font-weight: bold;
-            color: #2c5530;
-            margin-top: 10px;
-            font-style: italic;
+            background: rgba(157, 78, 221, 0.2);
+            border: 2px solid #9d4edd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .ending h2 {
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            text-shadow: 0 0 15px rgba(255, 107, 157, 0.8);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .story-text {
+                font-size: 1em;
+            }
+
+            .choice-btn {
+                font-size: 1em;
+                padding: 15px 20px;
+            }
+        }
+
+        /* Flickering torch effect */
+        @keyframes flicker {
+            0%, 100% { box-shadow: 0 0 40px rgba(138, 43, 226, 0.3); }
+            50% { box-shadow: 0 0 50px rgba(138, 43, 226, 0.5); }
+        }
+
+        .container {
+            animation: fadeIn 1s ease, flicker 3s infinite;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>🌲 The Enchanted Forest 🌲</h1>
+    <div class="container">
+        <h1>🌙 The Witch's Forest 🌙</h1>
+        <div class="subtitle">A Dark Tale of Survival and Choice</div>
 
-        <div class="story-text" id="storyText">
-            You stand at the edge of an ancient forest. The trees tower above you, their branches forming a canopy that filters the sunlight into dancing beams. Three distinct paths lie before you, each leading deeper into the woods.
+        <div class="story-box">
+            <div id="story-text" class="story-text"></div>
+            <div id="feedback" class="feedback"></div>
         </div>
 
-        <div class="choices" id="choices">
-            <button class="choice-btn" onclick="choosePath('left')">
-                Take the left path, where you hear the sound of running water
-            </button>
-            <button class="choice-btn" onclick="choosePath('middle')">
-                Take the middle path, where colorful butterflies flutter
-            </button>
-            <button class="choice-btn" onclick="choosePath('right')">
-                Take the right path, where mysterious glowing mushrooms grow
-            </button>
-        </div>
+        <div id="choices" class="choices"></div>
     </div>
 
     <script>
+        // Story data structure
         const story = {
             start: {
-                text: "You stand at the edge of an ancient forest. The trees tower above you, their branches forming a canopy that filters the sunlight into dancing beams. Three distinct paths lie before you, each leading deeper into the woods.",
+                text: "The forest grows darker with each step. You are a hunter, but now you are the hunted. The tales spoke of a witch who rules these cursed woods, commanding werewolves, spirits, and the undead. Your torch flickers as mist coils around ancient trees. In the distance, you hear a bone-chilling howl. To your left, you spot a faint firelight through the trees. To your right, darkness and shadows offer concealment. What do you do?",
                 choices: [
-                    { text: "Take the left path, where you hear the sound of running water", next: "left" },
-                    { text: "Take the middle path, where colorful butterflies flutter", next: "middle" },
-                    { text: "Take the right path, where mysterious glowing mushrooms grow", next: "right" }
-                ]
+                    { text: "Follow the howl — perhaps it's just a wolf, not a werewolf", next: "followHowl" },
+                    { text: "Approach the firelight — someone might be there", next: "approachFire" },
+                    { text: "Hide in the shadows and wait for dawn", next: "hideInShadows" }
+                ],
+                feedback: ""
             },
-            left: {
-                text: "You follow the sound of water and discover a crystal-clear stream. A small wooden bridge crosses it, but you notice something glittering beneath the water's surface. An old woman sits by the stream, offering you a cup of tea.",
+
+            followHowl: {
+                text: "Against your better judgment, you move toward the howl. The sound grows louder, more savage. You emerge into a moonlit clearing. There, surrounded by ancient standing stones, stands a massive creature — half-man, half-wolf. Its eyes glow amber in the darkness. It turns to face you, saliva dripping from its fangs. Behind it, you notice a silver pendant hanging from one of the stones, glinting in the moonlight. It might be a weapon, or a curse...",
                 choices: [
-                    { text: "Accept the tea and talk with the old woman", next: "leftTea" },
-                    { text: "Dive into the stream to retrieve the glittering object", next: "leftDive" },
-                    { text: "Cross the bridge and continue deeper into the forest", next: "leftBridge" }
-                ]
+                    { text: "Grab the silver pendant and confront the beast", next: "grabSilver" },
+                    { text: "Run back into the forest", next: "runFromWerewolf" },
+                    { text: "Stand still and try to show you mean no harm", next: "peacefulWerewolf" }
+                ],
+                feedback: "You feel the beast's eyes burning into your soul..."
             },
-            middle: {
-                text: "The butterflies lead you to a sunlit clearing where wildflowers bloom in every color imaginable. In the center stands a magnificent oak tree with a door carved into its trunk. You hear soft singing coming from within.",
+
+            approachFire: {
+                text: "You carefully make your way toward the flickering light. As you draw closer, you see it's a small campfire in a clearing. An old woman sits beside it, stirring a cauldron. She looks up at you with eyes that shine like polished obsidian. 'Lost, are you, hunter?' she cackles. 'I am the Witch of the Forest. You have three choices: drink from my cauldron and gain power, offer me your weapon and I'll show you the way out, or try to take me prisoner and force me to free the forest.'",
                 choices: [
-                    { text: "Knock on the tree door politely", next: "middleKnock" },
-                    { text: "Gather some flowers before investigating", next: "middleFlowers" },
-                    { text: "Walk around the tree to see what's behind it", next: "middleAround" }
-                ]
+                    { text: "Drink from the cauldron — power might help you survive", next: "drinkPotion" },
+                    { text: "Offer your weapon for safe passage", next: "offerWeapon" },
+                    { text: "Attempt to capture the witch", next: "captureWitch" }
+                ],
+                feedback: "The witch's smile reveals centuries of dark knowledge..."
             },
-            right: {
-                text: "The glowing mushrooms illuminate your path with an ethereal blue light. You come across a clearing where a white deer stands, watching you with intelligent eyes. It seems to want you to follow it.",
+
+            hideInShadows: {
+                text: "You crouch low in the underbrush, making yourself as small and silent as possible. Hours pass. The forest comes alive with strange sounds — whispers in languages you don't understand, spectral lights dancing between trees, the shuffle of something dead dragging itself through leaves. As dawn approaches, you see three paths: one leads to a decrepit chapel with a faint glow, another to a rope bridge over a chasm, and the third to what looks like the forest's edge.",
                 choices: [
-                    { text: "Follow the white deer", next: "rightFollow" },
-                    { text: "Collect some of the glowing mushrooms", next: "rightMushrooms" },
-                    { text: "Stay still and try to communicate with the deer", next: "rightCommunicate" }
-                ]
+                    { text: "Enter the chapel — holy ground might protect you", next: "enterChapel" },
+                    { text: "Cross the rope bridge quickly", next: "crossBridge" },
+                    { text: "Run for the forest's edge", next: "forestEdge" }
+                ],
+                feedback: "The night has tested your patience. Dawn brings new dangers..."
             },
-            leftTea: {
-                text: "The old woman smiles warmly as you accept her tea. She tells you ancient tales of the forest and reveals she is the Guardian of the Stream. As thanks for your kindness, she grants you the gift of understanding nature's language. Birds and animals now share their wisdom with you, and you become a renowned forest guide, helping lost travelers find their way.\n\n<div class='ending'>THE END - The Path of Wisdom</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            // Branch outcomes from following the howl
+            grabSilver: {
+                text: "You lunge forward and grab the silver pendant. It burns your hand but you hold on tight. The werewolf roars and charges. You hold up the pendant and it blazes with pure white light. The creature howls in agony and begins to transform back into a man. As he becomes human, he gasps, 'Thank you... the witch cursed me... follow the north star... you can escape...' He collapses, finally at peace. You take the pendant and head north. By morning, you find yourself at the forest's edge, forever changed by what you witnessed.",
+                choices: [],
+                feedback: "The silver burned away the curse...",
+                ending: "Freedom Through Courage",
+                endingText: "You escaped the Witch's Forest with a powerful artifact. The silver pendant now hangs around your neck, a reminder that sometimes bravery means facing the monster head-on."
             },
-            leftDive: {
-                text: "You plunge into the cold water and grab the shimmering object - it's a magic mirror! But when you surface, you find yourself in a different part of the forest, decades in the past. You decide to stay and protect the young forest, becoming its first guardian and ensuring its survival for future generations.\n\n<div class='ending'>THE END - The Guardian's Choice</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            runFromWerewolf: {
+                text: "You turn and sprint into the darkness. The werewolf gives chase, crashing through the undergrowth behind you. You run blindly until you burst into another clearing. There stands the witch, smiling. 'Running from my pet, are you?' She raises her hand and the werewolf stops at the clearing's edge. 'You have shown cowardice. Now you shall join my pack.' She speaks words of power and agony courses through your body. Your bones crack and reform. Fur sprouts from your skin. Your last human thought is a howl of despair.",
+                choices: [],
+                feedback: "The curse takes hold...",
+                ending: "Cursed to Run Forever",
+                endingText: "You failed to stand your ground. Now you are one of the witch's werewolf servants, doomed to hunt other lost souls in her forest. The hunt never ends."
             },
-            leftBridge: {
-                text: "You cross the bridge and venture deeper. The path leads you to a hidden grove where rare medicinal herbs grow. You spend years studying them and become a master healer, using the forest's gifts to cure ailments and help people from far and wide.\n\n<div class='ending'>THE END - The Healer's Journey</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            peacefulWerewolf: {
+                text: "You drop your weapon and stand still, hands open. The werewolf approaches, sniffing. For a moment, its eyes show intelligence, humanity even. It nudges your hand gently, then turns and begins walking. You follow, and it leads you through secret paths. By dawn, you reach the forest's edge. The werewolf transforms back into a man — a fellow hunter who was cursed but retained enough humanity to help you. 'Go,' he says. 'And never return.' You stumble out of the forest, grateful to be alive.",
+                choices: [],
+                feedback: "Compassion reveals unexpected allies...",
+                ending: "Mercy Rewarded",
+                endingText: "You survived by trusting in compassion over violence. Not all monsters are evil — some are simply cursed. You escape the forest with your humanity intact."
             },
-            middleKnock: {
-                text: "A tiny fairy opens the door and invites you inside. The tree is hollow and filled with a magical community of forest sprites. They're celebrating a festival and welcome you as their honored guest. You spend an enchanted evening learning their magic, and they teach you how to grow the most beautiful gardens. You return home and create magnificent gardens that bring joy to everyone.\n\n<div class='ending'>THE END - The Gardener's Magic</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            // Branch outcomes from approaching the fire
+            drinkPotion: {
+                text: "You lift the ladle to your lips and drink the strange brew. It tastes of earth and starlight. Power surges through you — your senses sharpen, your muscles grow stronger. But something else changes too. The witch laughs, 'You have taken my gift, now you are bound to this forest forever!' You feel roots growing from your feet, connecting you to the cursed land. You have become powerful, yes, but you can never leave. You are the forest's new guardian, replacing the witch who finally fades away, her curse passed on.",
+                choices: [],
+                feedback: "Power always has a price...",
+                ending: "The New Guardian",
+                endingText: "You gained immense power but lost your freedom. You are now the Witch's successor, bound to the forest for eternity. Was it worth it?"
             },
-            middleFlowers: {
-                text: "As you gather flowers, you notice each one has unique magical properties. The singing from the tree grows louder, and you realize the flowers are singing back! You've discovered the secret of harmonizing with nature. You become a renowned botanist who can communicate with plants and help them thrive in any environment.\n\n<div class='ending'>THE END - The Flower Whisperer</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            offerWeapon: {
+                text: "You carefully place your weapon at the witch's feet. She picks it up, examines it, and nods. 'A fair trade. A hunter who gives up his weapon is a hunter who chooses wisdom over violence.' She points with a gnarled finger. 'Follow that path. Do not stray from it, do not look back, and you will be free by sunrise.' You do as she says. The path is long and winding, and you hear terrible sounds around you, but you keep walking. As the sun rises, you step out of the forest, exhausted but alive and free.",
+                choices: [],
+                feedback: "Sometimes the wisest choice is surrender...",
+                ending: "The Wise Escape",
+                endingText: "You survived by making a peaceful trade. The witch honored her word. You emerged from the forest without your weapon, but with your life and a story few would believe."
             },
-            middleAround: {
-                text: "Behind the tree, you find a portal to the realm of eternal spring. You step through and discover a paradise where it's always the perfect day. You become the keeper of this realm, occasionally bringing worthy souls to visit this peaceful sanctuary.\n\n<div class='ending'>THE END - The Keeper of Spring</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            captureWitch: {
+                text: "You attempt to rush the witch, hoping to overpower her. She simply waves her hand and you freeze in place, unable to move. 'Foolish hunter,' she hisses. 'Did you think me defenseless?' She begins an incantation. You feel your body becoming lighter, transparent. 'You shall join my spirits, serving me for all eternity.' Your body dissolves into mist. You become aware of others like you — spirits trapped in the forest, bound to serve the witch forever. Your consciousness remains, but your body is gone. You are trapped in an endless torment.",
+                choices: [],
+                feedback: "Your aggression has doomed you...",
+                ending: "Spirit of the Forest",
+                endingText: "You attacked the witch and paid the ultimate price. You are now one of the forest spirits, doomed to haunt these woods forever, warning other travelers but unable to help them."
             },
-            rightFollow: {
-                text: "The deer leads you to a moonlit glade where other magical creatures gather. They reveal that you have been chosen to be the Ambassador between the human and magical worlds. You spend your life building bridges between both realms, bringing peace and understanding.\n\n<div class='ending'>THE END - The Ambassador's Destiny</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            // Branch outcomes from hiding in shadows
+            enterChapel: {
+                text: "You push open the chapel door. Inside, ancient pews are covered in moss. At the altar, you find a blessed silver dagger and a journal. The journal tells of a priest who once banished the witch. It says she can be defeated at her heart-tree in the forest's center at dawn. You have the weapon and the knowledge. You make your way to the heart-tree. There, as the sun rises, you find the witch vulnerable. You strike with the blessed dagger. She shrieks and dissolves into black smoke. The forest begins to change — color returns, birds sing. You've broken the curse and freed the forest.",
+                choices: [],
+                feedback: "Knowledge and faith combined to give you strength...",
+                ending: "The Witch Slayer",
+                endingText: "You have defeated the witch and freed the forest from her curse! You emerge as a hero, having ended decades of terror. The forest is healing, and your name will be remembered in legend."
             },
-            rightMushrooms: {
-                text: "The mushrooms' glow intensifies as you collect them. You discover they can create beautiful light that never fades. You become an artist, using these living lights to create breathtaking installations that inspire wonder and bring communities together.\n\n<div class='ending'>THE END - The Light Artist</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            crossBridge: {
+                text: "You step onto the rope bridge. It sways dangerously over a bottomless chasm filled with swirling mist. Halfway across, you hear a voice behind you: 'Where do you think you're going?' The witch appears at the other end of the bridge. She begins cutting the ropes with a knife. You have seconds to decide. You run forward as fast as you can. Just as the bridge collapses, you leap and barely grab the edge of the cliff. The witch reaches down — but instead of pushing you off, she pulls you up. 'You have spirit, hunter. I respect that. Go.' She vanishes. Confused but grateful, you find your way out of the forest.",
+                choices: [],
+                feedback: "Your determination impressed even the witch...",
+                ending: "Earned Respect",
+                endingText: "Through sheer determination and courage, you earned the witch's respect. She allowed you to leave. You survived not through combat or trickery, but through tenacity."
             },
-            rightCommunicate: {
-                text: "You stand still and open your heart. The deer touches its nose to your forehead, and suddenly you can sense the emotions of all living things. This gift of empathy allows you to become a mediator who can resolve conflicts and bring harmony wherever you go.\n\n<div class='ending'>THE END - The Empath's Gift</div>",
-                choices: [{ text: "Start Over", next: "start" }]
+
+            forestEdge: {
+                text: "You run toward what you hope is the forest's edge. But as you run, the trees seem to move, the path shifts. You're running in circles. Exhaustion takes hold. You collapse and fall unconscious. You wake to find yourself in your own camp, far from the forest, your hunting gear beside you. Was it all a dream? But your clothes are torn, your body is covered in scratches, and around your neck is a small token — a carved wooden wolf. The forest let you go... this time. But you know you were marked. You feel its pull even now, calling you back...",
+                choices: [],
+                feedback: "The forest has marked you...",
+                ending: "The Lucky Escape",
+                endingText: "You escaped, but at what cost? The forest released you, but you carry its mark. You survived, yet you know that one day, you may be called back to the Witch's Forest."
             }
         };
 
-        let currentScene = 'start';
+        let currentNode = 'start';
+        let gameActive = true;
 
-        function choosePath(choice) {
-            currentScene = choice;
-            updateScene();
-        }
+        function updateStory() {
+            const node = story[currentNode];
+            const storyText = document.getElementById('story-text');
+            const feedback = document.getElementById('feedback');
+            const choices = document.getElementById('choices');
 
-        function updateScene() {
-            const scene = story[currentScene];
-            const storyText = document.getElementById('storyText');
-            const choicesDiv = document.getElementById('choices');
-
-            // Fade out
+            // Update story text with fade animation
             storyText.style.opacity = '0';
-            choicesDiv.style.opacity = '0';
-
             setTimeout(() => {
-                // Update content
-                storyText.innerHTML = scene.text;
-                choicesDiv.innerHTML = '';
+                storyText.textContent = node.text;
+                storyText.style.opacity = '1';
+            }, 300);
 
-                scene.choices.forEach(choice => {
+            // Update feedback
+            feedback.textContent = node.feedback || '';
+
+            // Clear and update choices
+            choices.innerHTML = '';
+
+            if (node.choices && node.choices.length > 0) {
+                node.choices.forEach(choice => {
                     const button = document.createElement('button');
                     button.className = 'choice-btn';
-                    if (choice.next === 'start') {
-                        button.className += ' restart-btn';
-                    }
                     button.textContent = choice.text;
-                    button.onclick = () => {
-                        currentScene = choice.next;
-                        updateScene();
-                    };
-                    choicesDiv.appendChild(button);
+                    button.onclick = () => makeChoice(choice.next);
+                    choices.appendChild(button);
                 });
+            } else if (node.ending) {
+                // Show ending
+                const endingDiv = document.createElement('div');
+                endingDiv.className = 'ending';
+                endingDiv.innerHTML = `
+                    <h2>${node.ending}</h2>
+                    <p style="color: #e0aaff; margin-top: 10px;">${node.endingText}</p>
+                `;
+                choices.appendChild(endingDiv);
 
-                // Fade in
-                storyText.style.opacity = '1';
-                choicesDiv.style.opacity = '1';
-            }, 300);
+                const restartBtn = document.createElement('button');
+                restartBtn.className = 'restart-btn';
+                restartBtn.textContent = '🔄 Play Again';
+                restartBtn.onclick = restartGame;
+                choices.appendChild(restartBtn);
+
+                gameActive = false;
+            }
+
+            // Change background based on story node
+            updateBackground(currentNode);
         }
 
-        // Add smooth transitions
-        document.getElementById('storyText').style.transition = 'opacity 0.3s';
-        document.getElementById('choices').style.transition = 'opacity 0.3s';
+        function makeChoice(nextNode) {
+            if (!gameActive) return;
+            currentNode = nextNode;
+            updateStory();
+        }
+
+        function updateBackground(node) {
+            document.body.className = '';
+
+            if (node.includes('werewolf') || node === 'runFromWerewolf' || node === 'captureWitch') {
+                document.body.classList.add('danger');
+            } else if (node === 'grabSilver' || node === 'peacefulWerewolf' || node === 'offerWeapon' || node === 'enterChapel') {
+                document.body.classList.add('hope');
+            } else if (node === 'drinkPotion') {
+                document.body.classList.add('cursed');
+            }
+        }
+
+        function restartGame() {
+            currentNode = 'start';
+            gameActive = true;
+            document.body.className = '';
+            updateStory();
+        }
+
+        // Initialize the game
+        updateStory();
     </script>
 </body>
 </html>
