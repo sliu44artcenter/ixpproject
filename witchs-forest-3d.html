@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Witch's Forest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            font-family: 'Cinzel', 'Georgia', serif;
+            background: #000;
+            color: #fff;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #outcome-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.5);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            letter-spacing: 8px;
+        }
+        #restart-btn {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 40px;
+            font-size: 18px;
+            font-family: inherit;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: #fff;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+        #restart-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.6);
+        }
+        #restart-btn.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="outcome-text"></div>
+    <button id="restart-btn">Restart</button>
+
+    <script src="https://unpkg.com/three@0.148.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Fog
+        scene.fog = new THREE.Fog(0x0a0a0a, 5, 35);
+        scene.background = new THREE.Color(0x0a0a0a);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0x1a2a3a, 0.3);
+        scene.add(ambientLight);
+
+        const moonlight = new THREE.DirectionalLight(0x9db4c4, 0.8);
+        moonlight.position.set(10, 20, 5);
+        moonlight.castShadow = true;
+        scene.add(moonlight);
+
+        // Ground
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a2a1a,
+            roughness: 0.9
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Trees
+        function createTree(x, z) {
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.3, 3, 6);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x2a1a0a });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+
+            const leavesGeometry = new THREE.ConeGeometry(1.5, 3, 6);
+            const leavesMaterial = new THREE.MeshStandardMaterial({ color: 0x1a3a2a });
+            const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+            leaves.position.y = 3;
+
+            const tree = new THREE.Group();
+            tree.add(trunk);
+            tree.add(leaves);
+            tree.position.set(x, 1.5, z);
+            tree.castShadow = true;
+            return tree;
+        }
+
+        for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 10 + Math.random() * 20;
+            const x = Math.cos(angle) * distance;
+            const z = Math.sin(angle) * distance;
+            scene.add(createTree(x, z));
+        }
+
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particleCount = 200;
+        const positions = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 40;
+            positions[i + 1] = Math.random() * 10;
+            positions[i + 2] = (Math.random() - 0.5) * 40;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            color: 0x88aacc,
+            size: 0.05,
+            transparent: true,
+            opacity: 0.6
+        });
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+
+        // Tree Spirit Entity
+        const treeSpiritGroup = new THREE.Group();
+
+        const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.5, 3, 8, 3, false);
+        bodyGeometry.rotateZ(Math.PI * 0.1);
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a3020,
+            emissive: 0x2a4a2a,
+            emissiveIntensity: 0.3
+        });
+        const treeBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+
+        const armGeometry = new THREE.CylinderGeometry(0.1, 0.15, 2, 6);
+        const armMaterial = bodyMaterial.clone();
+        const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+        leftArm.position.set(-0.6, 0.5, 0);
+        leftArm.rotation.z = Math.PI / 3;
+
+        const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+        rightArm.position.set(0.6, 0.5, 0);
+        rightArm.rotation.z = -Math.PI / 3;
+
+        treeSpiritGroup.add(treeBody);
+        treeSpiritGroup.add(leftArm);
+        treeSpiritGroup.add(rightArm);
+        treeSpiritGroup.position.set(-5, 3, -10);
+        treeSpiritGroup.userData.type = 'treeSpirit';
+        scene.add(treeSpiritGroup);
+
+        // Wolf Spirit Entity
+        const wolfSpiritGroup = new THREE.Group();
+        const wolfParticlesGeometry = new THREE.BufferGeometry();
+        const wolfParticleCount = 150;
+        const wolfPositions = new Float32Array(wolfParticleCount * 3);
+
+        for (let i = 0; i < wolfParticleCount * 3; i += 3) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI;
+            const r = 0.5 + Math.random() * 1.5;
+
+            wolfPositions[i] = r * Math.sin(phi) * Math.cos(theta);
+            wolfPositions[i + 1] = r * Math.sin(phi) * Math.sin(theta) - 0.5;
+            wolfPositions[i + 2] = r * Math.cos(phi);
+        }
+
+        wolfParticlesGeometry.setAttribute('position', new THREE.BufferAttribute(wolfPositions, 3));
+        const wolfParticlesMaterial = new THREE.PointsMaterial({
+            color: 0x4488ff,
+            size: 0.15,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending
+        });
+        const wolfParticles = new THREE.Points(wolfParticlesGeometry, wolfParticlesMaterial);
+
+        const wolfHitbox = new THREE.Mesh(
+            new THREE.SphereGeometry(1.5, 8, 8),
+            new THREE.MeshBasicMaterial({ visible: false })
+        );
+
+        wolfSpiritGroup.add(wolfParticles);
+        wolfSpiritGroup.add(wolfHitbox);
+        wolfSpiritGroup.position.set(5, 2, -10);
+        wolfSpiritGroup.userData.type = 'wolfSpirit';
+        scene.add(wolfSpiritGroup);
+
+        // Witch Entity
+        const witchGroup = new THREE.Group();
+
+        const witchGeometry = new THREE.CylinderGeometry(0.3, 0.6, 2.5, 8, 4, true);
+        const witchMaterial = new THREE.MeshStandardMaterial({
+            color: 0xccccff,
+            emissive: 0x8866ff,
+            emissiveIntensity: 0.4,
+            transparent: true,
+            opacity: 0.6
+        });
+        const witchBody = new THREE.Mesh(witchGeometry, witchMaterial);
+
+        const headGeometry = new THREE.SphereGeometry(0.4, 8, 8);
+        const witchHead = new THREE.Mesh(headGeometry, witchMaterial);
+        witchHead.position.y = 1.7;
+
+        witchGroup.add(witchBody);
+        witchGroup.add(witchHead);
+        witchGroup.position.set(0, 3, -12);
+        witchGroup.userData.type = 'witch';
+        scene.add(witchGroup);
+
+        // Camera
+        camera.position.set(0, 2, 5);
+        camera.lookAt(0, 2, -10);
+
+        // Audio
+        const forestAmbience = new Audio('https://cdn.pixabay.com/download/audio/2022/03/30/audio_10e2547e9b.mp3?filename=forest-night.mp3');
+        forestAmbience.loop = true;
+        forestAmbience.volume = 0.4;
+        forestAmbience.play();
+
+        const treeSpiritSound = new Audio('https://cdn.pixabay.com/download/audio/2022/11/10/audio_2d76313d15.mp3?filename=forest-creaking.mp3');
+        treeSpiritSound.loop = true;
+        treeSpiritSound.volume = 0;
+
+        const wolfSpiritSound = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_7f70963c4b.mp3?filename=wolf-howl.mp3');
+        wolfSpiritSound.loop = true;
+        wolfSpiritSound.volume = 0;
+
+        const witchSound = new Audio('https://cdn.pixabay.com/download/audio/2023/03/22/audio_377f21626f.mp3?filename=wind-blowing.mp3');
+        witchSound.loop = true;
+        witchSound.volume = 0;
+
+        // Raycasting
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredEntity = null;
+        let interactionLocked = false;
+
+        const entities = [treeSpiritGroup, wolfSpiritGroup, witchGroup];
+
+        window.addEventListener('mousemove', (event) => {
+            if (interactionLocked) return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        window.addEventListener('click', () => {
+            if (interactionLocked || !hoveredEntity) return;
+
+            interactionLocked = true;
+            const entityType = hoveredEntity.userData.type;
+
+            // Disable all entities
+            entities.forEach(e => e.visible = e === hoveredEntity);
+
+            // Camera animation
+            const targetPos = hoveredEntity.position.clone();
+            targetPos.z += 3;
+
+            gsap.to(camera.position, {
+                x: targetPos.x,
+                y: targetPos.y,
+                z: targetPos.z,
+                duration: 2,
+                ease: "power2.inOut"
+            });
+
+            // Audio transitions
+            gsap.to(forestAmbience, { volume: 0, duration: 2 });
+
+            let entitySound;
+            let moonColor;
+            let outcomes;
+
+            if (entityType === 'treeSpirit') {
+                entitySound = treeSpiritSound;
+                moonColor = 0x2a6a5a;
+                outcomes = [
+                    { text: 'Bound', lightColor: 0xff2222 },
+                    { text: 'Freed', lightColor: 0x88ff88 }
+                ];
+            } else if (entityType === 'wolfSpirit') {
+                entitySound = wolfSpiritSound;
+                moonColor = 0xff3333;
+                outcomes = [
+                    { text: 'Hunted', lightColor: 0xff0000 },
+                    { text: 'Reborn', lightColor: 0x4488ff }
+                ];
+            } else if (entityType === 'witch') {
+                entitySound = witchSound;
+                moonColor = 0x8844cc;
+                outcomes = [
+                    { text: 'Doomed', lightColor: 0x440044 },
+                    { text: 'Awakened', lightColor: 0xffffaa }
+                ];
+            }
+
+            gsap.to(entitySound, { volume: 0.5, duration: 2 });
+            entitySound.play();
+
+            gsap.to(moonlight.color, {
+                r: ((moonColor >> 16) & 255) / 255,
+                g: ((moonColor >> 8) & 255) / 255,
+                b: (moonColor & 255) / 255,
+                duration: 2
+            });
+
+            // Show outcome after 2 seconds
+            setTimeout(() => {
+                const outcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+                const outcomeText = document.getElementById('outcome-text');
+                outcomeText.textContent = outcome.text;
+
+                gsap.to(outcomeText, { opacity: 1, duration: 1 });
+
+                gsap.to(moonlight.color, {
+                    r: ((outcome.lightColor >> 16) & 255) / 255,
+                    g: ((outcome.lightColor >> 8) & 255) / 255,
+                    b: (outcome.lightColor & 255) / 255,
+                    duration: 1.5
+                });
+
+                setTimeout(() => {
+                    gsap.to(outcomeText, { opacity: 0, duration: 1 });
+                    document.getElementById('restart-btn').classList.add('visible');
+                }, 3000);
+            }, 2000);
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            // Reset everything
+            interactionLocked = false;
+            hoveredEntity = null;
+
+            entities.forEach(e => {
+                e.visible = true;
+                e.scale.set(1, 1, 1);
+            });
+
+            gsap.to(camera.position, {
+                x: 0,
+                y: 2,
+                z: 5,
+                duration: 2
+            });
+
+            gsap.to(moonlight.color, {
+                r: 0x9d / 255,
+                g: 0xb4 / 255,
+                b: 0xc4 / 255,
+                duration: 2
+            });
+
+            gsap.to(forestAmbience, { volume: 0.4, duration: 2 });
+            gsap.to(treeSpiritSound, { volume: 0, duration: 1, onComplete: () => treeSpiritSound.pause() });
+            gsap.to(wolfSpiritSound, { volume: 0, duration: 1, onComplete: () => wolfSpiritSound.pause() });
+            gsap.to(witchSound, { volume: 0, duration: 1, onComplete: () => witchSound.pause() });
+
+            document.getElementById('restart-btn').classList.remove('visible');
+            document.getElementById('outcome-text').textContent = '';
+        });
+
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            // Camera breathing
+            camera.position.y = 2 + Math.sin(time * 0.5) * 0.1;
+
+            // Particle animation
+            const positions = particles.geometry.attributes.position.array;
+            for (let i = 1; i < positions.length; i += 3) {
+                positions[i] += 0.002;
+                if (positions[i] > 10) positions[i] = 0;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            // Entity floating
+            treeSpiritGroup.position.y = 3 + Math.sin(time * 0.7) * 0.3;
+            treeSpiritGroup.rotation.y = Math.sin(time * 0.3) * 0.1;
+
+            wolfSpiritGroup.position.y = 2 + Math.sin(time * 0.9) * 0.2;
+            const wolfPos = wolfSpiritGroup.children[0].geometry.attributes.position.array;
+            for (let i = 0; i < wolfPos.length; i += 3) {
+                wolfPos[i] += Math.sin(time + i) * 0.002;
+                wolfPos[i + 1] += Math.cos(time + i) * 0.002;
+            }
+            wolfSpiritGroup.children[0].geometry.attributes.position.needsUpdate = true;
+
+            witchGroup.position.y = 3 + Math.sin(time * 0.6) * 0.25;
+            witchGroup.rotation.y = Math.sin(time * 0.2) * 0.15;
+
+            // Raycasting
+            if (!interactionLocked) {
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(entities, true);
+
+                if (intersects.length > 0) {
+                    const newHovered = intersects[0].object.parent;
+
+                    if (newHovered !== hoveredEntity) {
+                        if (hoveredEntity) {
+                            gsap.to(hoveredEntity.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+                        }
+                        hoveredEntity = newHovered;
+                        gsap.to(hoveredEntity.scale, { x: 1.15, y: 1.15, z: 1.15, duration: 0.3 });
+
+                        // Intensify effects on hover
+                        if (hoveredEntity.userData.type === 'treeSpirit') {
+                            gsap.to(bodyMaterial.emissive, {
+                                r: 0x4a / 255,
+                                g: 0x8a / 255,
+                                b: 0x4a / 255,
+                                duration: 0.3
+                            });
+                        }
+                    }
+                    document.body.style.cursor = 'pointer';
+                } else {
+                    if (hoveredEntity) {
+                        gsap.to(hoveredEntity.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+
+                        if (hoveredEntity.userData.type === 'treeSpirit') {
+                            gsap.to(bodyMaterial.emissive, {
+                                r: 0x2a / 255,
+                                g: 0x4a / 255,
+                                b: 0x2a / 255,
+                                duration: 0.3
+                            });
+                        }
+                        hoveredEntity = null;
+                    }
+                    document.body.style.cursor = 'default';
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
+<!-- The Witch's Forest - A dark fantasy interactive experience -->
