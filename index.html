@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Witch's Forest - Interactive Story</title>
+    <title>The Witch's Forest</title>
     <style>
         * {
             margin: 0;
@@ -13,840 +13,544 @@
 
         body {
             font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0f2e 50%, #0d1f1a 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            transition: background 1s ease;
+            overflow: hidden;
+            background: #000;
+            cursor: crosshair;
         }
 
-        body.danger {
-            background: linear-gradient(135deg, #1a0000 0%, #2d0a0a 50%, #1a0000 100%);
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
 
-        body.hope {
-            background: linear-gradient(135deg, #0a1a0a 0%, #1a2d1a 50%, #0f1f0f 100%);
-        }
-
-        body.cursed {
-            background: linear-gradient(135deg, #1a001a 0%, #2d0a2d 50%, #1a001a 100%);
-        }
-
-        .container {
-            max-width: 900px;
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(10, 10, 20, 0.9);
-            border: 2px solid #4a0e4e;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 0 40px rgba(138, 43, 226, 0.3),
-                        inset 0 0 30px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 1s ease;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            color: #9d4edd;
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
+            color: #8B7AB8;
+            opacity: 0;
+            text-shadow: 0 0 20px #8B7AB8;
+        }
+
+        #title h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+        }
+
+        #title p {
+            font-size: 1.5em;
             letter-spacing: 2px;
         }
 
-        .subtitle {
-            color: #7b2cbf;
-            text-align: center;
-            font-size: 1em;
-            margin-bottom: 30px;
-            font-style: italic;
-        }
-
-        .scene-image {
-            width: 100%;
-            height: 250px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #5a189a;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
-            animation: imageFade 0.8s ease;
-        }
-
-        @keyframes imageFade {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .scene-image svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .story-box {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #5a189a;
-            border-radius: 10px;
-            padding: 30px;
-            margin-bottom: 30px;
-            min-height: 150px;
-        }
-
-        .story-text {
-            color: #e0aaff;
-            font-size: 1.1em;
-            line-height: 1.8;
-            text-align: justify;
-            animation: textFade 0.8s ease;
-        }
-
-        @keyframes textFade {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .feedback {
-            color: #ff6b9d;
-            font-style: italic;
-            font-size: 0.95em;
-            margin-top: 15px;
-            text-align: center;
-            min-height: 20px;
-            animation: pulse 1s ease;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-
-        .choices {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .choice-btn {
-            background: linear-gradient(135deg, #240046 0%, #3c096c 100%);
-            color: #e0aaff;
-            border: 2px solid #5a189a;
-            padding: 18px 25px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: left;
-            position: relative;
-            overflow: hidden;
-            font-family: 'Georgia', serif;
-        }
-
-        .choice-btn::before {
-            content: '→';
+        #message {
             position: absolute;
-            left: 15px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: #fff;
             opacity: 0;
-            transition: all 0.3s ease;
+            text-shadow: 0 0 30px currentColor;
+            pointer-events: none;
+            z-index: 20;
         }
 
-        .choice-btn:hover {
-            background: linear-gradient(135deg, #3c096c 0%, #5a189a 100%);
-            transform: translateX(10px);
-            box-shadow: 0 0 25px rgba(157, 78, 221, 0.6);
-            border-color: #9d4edd;
-            padding-left: 40px;
-        }
-
-        .choice-btn:hover::before {
-            opacity: 1;
-            left: 20px;
-        }
-
-        .choice-btn:active {
-            transform: translateX(10px) scale(0.98);
-        }
-
-        .restart-btn {
-            background: linear-gradient(135deg, #006400 0%, #228b22 100%);
-            color: #ffffff;
-            border: 2px solid #32cd32;
-            padding: 15px 30px;
+        #restart {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 40px;
             font-size: 1.2em;
-            border-radius: 8px;
+            background: rgba(139, 122, 184, 0.3);
+            color: #8B7AB8;
+            border: 2px solid #8B7AB8;
             cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
             font-family: 'Georgia', serif;
-            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #8B7AB8;
+            box-shadow: 0 0 20px rgba(139, 122, 184, 0.5);
         }
 
-        .restart-btn:hover {
-            background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
-            box-shadow: 0 0 25px rgba(50, 205, 50, 0.6);
-            transform: scale(1.05);
+        #restart:hover {
+            background: rgba(139, 122, 184, 0.6);
+            box-shadow: 0 0 30px rgba(139, 122, 184, 0.8);
         }
 
-        .hidden {
-            display: none;
+        #restart.visible {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        .ending {
-            background: rgba(157, 78, 221, 0.2);
-            border: 2px solid #9d4edd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 15px;
+        .choice-label {
+            position: absolute;
+            color: #fff;
+            font-size: 1.2em;
+            pointer-events: none;
+            opacity: 0;
+            text-shadow: 0 0 10px currentColor;
+            letter-spacing: 1px;
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #8B7AB8;
+            font-size: 1em;
+            opacity: 0;
             text-align: center;
-        }
-
-        .ending h2 {
-            color: #ff6b9d;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-            text-shadow: 0 0 15px rgba(255, 107, 157, 0.8);
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .scene-image {
-                height: 200px;
-            }
-
-            .story-text {
-                font-size: 1em;
-            }
-
-            .choice-btn {
-                font-size: 1em;
-                padding: 15px 20px;
-            }
-        }
-
-        /* Flickering torch effect */
-        @keyframes flicker {
-            0%, 100% { box-shadow: 0 0 40px rgba(138, 43, 226, 0.3); }
-            50% { box-shadow: 0 0 50px rgba(138, 43, 226, 0.5); }
-        }
-
-        .container {
-            animation: fadeIn 1s ease, flicker 3s infinite;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🌙 The Witch's Forest 🌙</h1>
-        <div class="subtitle">A Dark Tale of Survival and Choice</div>
-
-        <div id="scene-image" class="scene-image"></div>
-
-        <div class="story-box">
-            <div id="story-text" class="story-text"></div>
-            <div id="feedback" class="feedback"></div>
+    <div id="container"></div>
+    <div id="overlay">
+        <div id="title">
+            <h1>THE WITCH'S FOREST</h1>
+            <p>Choose Your Path</p>
         </div>
-
-        <div id="choices" class="choices"></div>
+        <div id="message"></div>
+        <div id="instructions">Click to choose...</div>
+        <button id="restart">Play Again</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
     <script>
-        // SVG Images for each scene
-        const sceneImages = {
-            start: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#1a0f2e;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#0d1f1a;stop-opacity:1" />
-                    </linearGradient>
-                    <radialGradient id="moonGrad">
-                        <stop offset="0%" style="stop-color:#e0aaff;stop-opacity:0.8" />
-                        <stop offset="100%" style="stop-color:#9d4edd;stop-opacity:0.3" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="url(#skyGrad)"/>
-                <circle cx="320" cy="60" r="30" fill="url(#moonGrad)"/>
-                <circle cx="320" cy="60" r="25" fill="#f0e5ff" opacity="0.9"/>
-                <path d="M 0 200 Q 50 180 100 200 T 200 200 T 300 200 T 400 200 L 400 250 L 0 250 Z" fill="#0a1f0a"/>
-                <ellipse cx="80" cy="160" rx="40" ry="60" fill="#0d2a0d"/>
-                <ellipse cx="150" cy="140" rx="50" ry="80" fill="#0d2a0d"/>
-                <ellipse cx="230" cy="165" rx="35" ry="55" fill="#0d2a0d"/>
-                <ellipse cx="310" cy="150" rx="45" ry="70" fill="#0d2a0d"/>
-                <path d="M 200 100 L 200 250" stroke="#1a1a1a" stroke-width="8" opacity="0.7"/>
-                <ellipse cx="200" cy="90" rx="40" ry="50" fill="#0d2a0d"/>
-                <path d="M 100 220 Q 150 200 200 210" stroke="#8b4513" stroke-width="3" fill="none" opacity="0.5"/>
-                <circle cx="50" cy="50" r="2" fill="#e0aaff" opacity="0.6"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/></circle>
-                <circle cx="280" cy="100" r="2" fill="#e0aaff" opacity="0.6"><animate attributeName="opacity" values="0.6;0.3;0.6" dur="3s" repeatCount="indefinite"/></circle>
-                <circle cx="120" cy="80" r="2" fill="#e0aaff" opacity="0.6"><animate attributeName="opacity" values="0.4;0.9;0.4" dur="2.5s" repeatCount="indefinite"/></circle>
-                <path d="M 0 230 Q 100 225 200 235 T 400 230" stroke="#2d4a2d" stroke-width="2" fill="none" opacity="0.6"/>
-            </svg>`,
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0a0a1a, 0.08);
 
-            followHowl: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="moonlight">
-                        <stop offset="0%" style="stop-color:#c0c0ff;stop-opacity:0.6" />
-                        <stop offset="100%" style="stop-color:#1a0f2e;stop-opacity:0" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="#0a0a1a"/>
-                <circle cx="200" cy="125" r="100" fill="url(#moonlight)"/>
-                <circle cx="300" cy="50" r="35" fill="#e0d0ff" opacity="0.7"/>
-                <circle cx="300" cy="50" r="30" fill="#f5f0ff"/>
-                <g id="werewolf" transform="translate(200, 180)">
-                    <ellipse cx="0" cy="0" rx="30" ry="25" fill="#2a2a3a"/>
-                    <ellipse cx="0" cy="-40" rx="25" ry="30" fill="#2a2a3a"/>
-                    <circle cx="-10" cy="-45" r="8" fill="#ffaa00" opacity="0.9"><animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/></circle>
-                    <circle cx="10" cy="-45" r="8" fill="#ffaa00" opacity="0.9"><animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/></circle>
-                    <path d="M -15 -55 L -20 -70 L -13 -65 Z" fill="#2a2a3a"/>
-                    <path d="M 15 -55 L 20 -70 L 13 -65 Z" fill="#2a2a3a"/>
-                    <ellipse cx="-25" cy="-15" rx="12" ry="20" fill="#2a2a3a"/>
-                    <ellipse cx="25" cy="-15" rx="12" ry="20" fill="#2a2a3a"/>
-                </g>
-                <g id="stones">
-                    <ellipse cx="80" cy="220" rx="30" ry="15" fill="#4a4a5a" opacity="0.8"/>
-                    <rect x="55" y="170" width="50" height="50" fill="#5a5a6a" opacity="0.9" rx="5"/>
-                    <ellipse cx="320" cy="215" rx="25" ry="12" fill="#4a4a5a" opacity="0.8"/>
-                    <rect x="300" y="175" width="40" height="40" fill="#5a5a6a" opacity="0.9" rx="5"/>
-                    <ellipse cx="150" cy="225" rx="20" ry="10" fill="#4a4a5a" opacity="0.8"/>
-                    <rect x="135" y="190" width="30" height="35" fill="#5a5a6a" opacity="0.9" rx="5"/>
-                </g>
-                <g id="pendant" transform="translate(280, 185)">
-                    <path d="M 0 -5 L 3 5 L -3 5 Z" fill="#c0c0c0" opacity="0.9"/>
-                    <circle cx="0" cy="10" r="6" fill="#d0d0e0" stroke="#a0a0b0" stroke-width="1">
-                        <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                </g>
-            </svg>`,
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 8);
+        camera.lookAt(0, 2, 0);
 
-            approachFire: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="fireGlow">
-                        <stop offset="0%" style="stop-color:#ff6b00;stop-opacity:0.8" />
-                        <stop offset="50%" style="stop-color:#ff4400;stop-opacity:0.3" />
-                        <stop offset="100%" style="stop-color:#1a0a00;stop-opacity:0" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="#0a0a0a"/>
-                <circle cx="200" cy="180" r="120" fill="url(#fireGlow)" opacity="0.6"/>
-                <g id="fire" transform="translate(200, 200)">
-                    <ellipse cx="0" cy="20" rx="40" ry="8" fill="#2a1a0a" opacity="0.7"/>
-                    <circle cx="-15" cy="15" r="6" fill="#3a2a1a"/>
-                    <circle cx="15" cy="15" r="6" fill="#3a2a1a"/>
-                    <circle cx="0" cy="12" r="7" fill="#3a2a1a"/>
-                    <path d="M -20 10 Q -15 -20 -10 -25 Q -8 -15 -12 5 Z" fill="#ff6600" opacity="0.9">
-                        <animate attributeName="d" values="M -20 10 Q -15 -20 -10 -25 Q -8 -15 -12 5 Z;M -20 10 Q -18 -25 -12 -28 Q -10 -18 -12 5 Z;M -20 10 Q -15 -20 -10 -25 Q -8 -15 -12 5 Z" dur="0.5s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M 0 10 Q 2 -30 5 -35 Q 8 -25 3 5 Z" fill="#ff8800" opacity="0.9">
-                        <animate attributeName="d" values="M 0 10 Q 2 -30 5 -35 Q 8 -25 3 5 Z;M 0 10 Q 4 -35 7 -40 Q 10 -28 3 5 Z;M 0 10 Q 2 -30 5 -35 Q 8 -25 3 5 Z" dur="0.4s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M 20 10 Q 15 -22 12 -28 Q 10 -18 15 5 Z" fill="#ff6600" opacity="0.9">
-                        <animate attributeName="d" values="M 20 10 Q 15 -22 12 -28 Q 10 -18 15 5 Z;M 20 10 Q 18 -28 15 -32 Q 12 -20 15 5 Z;M 20 10 Q 15 -22 12 -28 Q 10 -18 15 5 Z" dur="0.6s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M -8 5 Q -5 -15 -3 -18 Q 0 -12 -5 3 Z" fill="#ffaa00" opacity="0.8">
-                        <animate attributeName="d" values="M -8 5 Q -5 -15 -3 -18 Q 0 -12 -5 3 Z;M -8 5 Q -6 -18 -4 -22 Q -1 -14 -5 3 Z;M -8 5 Q -5 -15 -3 -18 Q 0 -12 -5 3 Z" dur="0.3s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M 8 5 Q 6 -16 8 -20 Q 10 -13 7 3 Z" fill="#ffaa00" opacity="0.8">
-                        <animate attributeName="d" values="M 8 5 Q 6 -16 8 -20 Q 10 -13 7 3 Z;M 8 5 Q 7 -19 9 -24 Q 11 -15 7 3 Z;M 8 5 Q 6 -16 8 -20 Q 10 -13 7 3 Z" dur="0.35s" repeatCount="indefinite"/>
-                    </path>
-                </g>
-                <g id="cauldron" transform="translate(200, 200)">
-                    <ellipse cx="0" cy="-25" rx="25" ry="8" fill="#2a4a2a" opacity="0.6"/>
-                    <path d="M -25 -25 Q -30 0 -22 20 L 22 20 Q 30 0 25 -25 Z" fill="#1a2a1a" stroke="#0a1a0a" stroke-width="2"/>
-                    <ellipse cx="0" cy="20" rx="22" ry="6" fill="#0a1a0a"/>
-                </g>
-                <g id="witch" transform="translate(280, 190)">
-                    <path d="M -15 -30 Q -20 -50 -10 -60 Q 0 -55 5 -60 Q 15 -50 10 -30 Z" fill="#2a1a2a"/>
-                    <ellipse cx="-2" cy="-35" rx="15" ry="18" fill="#3a2a2a"/>
-                    <circle cx="-7" cy="-38" r="3" fill="#ff6b9d" opacity="0.8"/>
-                    <circle cx="3" cy="-38" r="3" fill="#ff6b9d" opacity="0.8"/>
-                    <path d="M -15 -25 L -25 -10 L -20 -15 L -15 -20 Z" fill="#2a1a2a"/>
-                    <ellipse cx="0" cy="0" rx="20" ry="25" fill="#1a0a1a"/>
-                    <path d="M -18 0 Q -22 15 -15 25" stroke="#2a1a2a" stroke-width="4" fill="none"/>
-                </g>
-                <ellipse cx="80" cy="140" rx="35" ry="55" fill="#0d1a0d" opacity="0.6"/>
-                <ellipse cx="320" cy="145" rx="40" ry="60" fill="#0d1a0d" opacity="0.6"/>
-            </svg>`,
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x0a0a1a);
+        document.getElementById('container').appendChild(renderer.domElement);
 
-            hideInShadows: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="250" fill="#050510"/>
-                <ellipse cx="100" cy="120" rx="45" ry="70" fill="#0a0a15"/>
-                <ellipse cx="200" cy="110" rx="50" ry="80" fill="#0a0a15"/>
-                <ellipse cx="300" cy="125" rx="40" ry="65" fill="#0a0a15"/>
-                <ellipse cx="350" cy="140" rx="35" ry="55" fill="#0a0a15"/>
-                <ellipse cx="50" cy="135" rx="38" ry="60" fill="#0a0a15"/>
-                <g id="mist">
-                    <ellipse cx="150" cy="200" rx="80" ry="15" fill="#1a1a2a" opacity="0.3">
-                        <animate attributeName="opacity" values="0.2;0.4;0.2" dur="4s" repeatCount="indefinite"/>
-                    </ellipse>
-                    <ellipse cx="250" cy="210" rx="90" ry="18" fill="#1a1a2a" opacity="0.3">
-                        <animate attributeName="opacity" values="0.3;0.5;0.3" dur="5s" repeatCount="indefinite"/>
-                    </ellipse>
-                </g>
-                <circle cx="80" cy="60" r="2" fill="#7b2cbf" opacity="0.5">
-                    <animate attributeName="cy" values="60;58;60" dur="3s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="220" cy="80" r="2" fill="#9d4edd" opacity="0.5">
-                    <animate attributeName="cy" values="80;78;80" dur="4s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="4s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="320" cy="70" r="2" fill="#7b2cbf" opacity="0.5">
-                    <animate attributeName="cy" values="70;68;70" dur="3.5s" repeatCount="indefinite"/>
-                    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3.5s" repeatCount="indefinite"/>
-                </circle>
-                <path d="M 0 220 Q 100 215 200 225 T 400 220 L 400 250 L 0 250 Z" fill="#0a0f0a"/>
-                <g id="eyes" opacity="0.7">
-                    <circle cx="140" cy="95" r="3" fill="#ff6600">
-                        <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="148" cy="95" r="3" fill="#ff6600">
-                        <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
-                    </circle>
-                </g>
-            </svg>`,
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x2d1b4e, 0.3);
+        scene.add(ambientLight);
 
-            grabSilver: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="silverGlow">
-                        <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#e0e0ff;stop-opacity:0.6" />
-                        <stop offset="100%" style="stop-color:#c0c0ff;stop-opacity:0" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="#0a1a0a"/>
-                <circle cx="200" cy="125" r="100" fill="url(#silverGlow)" opacity="0.6"/>
-                <g id="pendant" transform="translate(200, 125)">
-                    <circle cx="0" cy="0" r="40" fill="url(#silverGlow)"/>
-                    <circle cx="0" cy="0" r="25" fill="#ffffff" opacity="0.9">
-                        <animate attributeName="r" values="25;28;25" dur="1s" repeatCount="indefinite"/>
-                    </circle>
-                    <path d="M -10 -10 L 0 -20 L 10 -10 L 20 0 L 10 10 L 0 20 L -10 10 L -20 0 Z" fill="#e0e0ff" opacity="0.8"/>
-                    <circle cx="0" cy="0" r="15" fill="#f0f0ff"/>
-                </g>
-                <path d="M 0 220 Q 100 215 200 225 T 400 220 L 400 250 L 0 250 Z" fill="#1a2a1a"/>
-                <text x="200" y="230" font-family="Georgia" font-size="14" fill="#90ee90" text-anchor="middle" opacity="0.8">Freedom Awaits</text>
-            </svg>`,
+        const moonLight = new THREE.DirectionalLight(0x6b4c9a, 0.5);
+        moonLight.position.set(-5, 10, -5);
+        scene.add(moonLight);
 
-            runFromWerewolf: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="redGlow">
-                        <stop offset="0%" style="stop-color:#8b0000;stop-opacity:0.6" />
-                        <stop offset="100%" style="stop-color:#2d0000;stop-opacity:0" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="#1a0000"/>
-                <circle cx="200" cy="125" r="120" fill="url(#redGlow)"/>
-                <g id="curse" opacity="0.8">
-                    <path d="M 180 120 Q 185 100 190 95 Q 195 100 200 120" stroke="#ff0000" stroke-width="2" fill="none">
-                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
-                    </path>
-                    <path d="M 200 120 Q 205 100 210 95 Q 215 100 220 120" stroke="#ff0000" stroke-width="2" fill="none">
-                        <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" begin="0.3s" repeatCount="indefinite"/>
-                    </path>
-                </g>
-                <circle cx="180" cy="130" r="5" fill="#ff0000" opacity="0.7">
-                    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.5s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="220" cy="130" r="5" fill="#ff0000" opacity="0.7">
-                    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.5s" repeatCount="indefinite"/>
-                </circle>
-                <text x="200" y="230" font-family="Georgia" font-size="14" fill="#ff6666" text-anchor="middle" opacity="0.8">Cursed Forever</text>
-            </svg>`,
+        // Ground
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            color: 0x0d0d1a,
+            roughness: 0.9
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = 0;
+        scene.add(ground);
 
-            peacefulWerewolf: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="dawnSky" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style="stop-color:#1a2a3a;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#4a5a6a;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <rect width="400" height="250" fill="url(#dawnSky)"/>
-                <circle cx="350" cy="60" r="35" fill="#ffcc66" opacity="0.6"/>
-                <ellipse cx="100" cy="170" rx="40" ry="60" fill="#2a3a2a"/>
-                <ellipse cx="200" cy="165" rx="45" ry="65" fill="#2a3a2a"/>
-                <ellipse cx="300" cy="175" rx="38" ry="58" fill="#2a3a2a"/>
-                <g id="man" transform="translate(200, 200)">
-                    <ellipse cx="0" cy="-20" rx="12" ry="15" fill="#8b7355"/>
-                    <ellipse cx="0" cy="0" rx="15" ry="20" fill="#5a4a3a"/>
-                    <path d="M -12 -5 L -20 10" stroke="#5a4a3a" stroke-width="4"/>
-                    <path d="M 12 -5 L 20 10" stroke="#5a4a3a" stroke-width="4"/>
-                </g>
-                <path d="M 0 220 Q 100 215 200 225 T 400 220 L 400 250 L 0 250 Z" fill="#3a4a3a"/>
-                <text x="200" y="235" font-family="Georgia" font-size="14" fill="#add8e6" text-anchor="middle">Compassion Rewarded</text>
-            </svg>`,
+        // Trees
+        const trees = [];
+        function createTree(x, z) {
+            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.4, 5, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a2e });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
 
-            drinkPotion: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="purpleGlow">
-                        <stop offset="0%" style="stop-color:#9d4edd;stop-opacity:0.8" />
-                        <stop offset="100%" style="stop-color:#5a189a;stop-opacity:0" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="#1a001a"/>
-                <circle cx="200" cy="200" r="100" fill="url(#purpleGlow)" opacity="0.7"/>
-                <g id="roots" opacity="0.6">
-                    <path d="M 180 200 Q 170 220 160 240" stroke="#4a2a4a" stroke-width="4" fill="none"/>
-                    <path d="M 185 205 Q 175 225 170 250" stroke="#4a2a4a" stroke-width="3" fill="none"/>
-                    <path d="M 220 200 Q 230 220 240 240" stroke="#4a2a4a" stroke-width="4" fill="none"/>
-                    <path d="M 215 205 Q 225 225 230 250" stroke="#4a2a4a" stroke-width="3" fill="none"/>
-                    <path d="M 200 210 Q 200 230 200 250" stroke="#4a2a4a" stroke-width="5" fill="none"/>
-                </g>
-                <ellipse cx="200" cy="180" rx="25" ry="35" fill="#7b2cbf"/>
-                <circle cx="195" cy="170" r="4" fill="#9d4edd" opacity="0.8">
-                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="205" cy="170" r="4" fill="#9d4edd" opacity="0.8">
-                    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
-                </circle>
-                <text x="200" y="100" font-family="Georgia" font-size="14" fill="#c77dff" text-anchor="middle" opacity="0.9">Bound to the Forest</text>
-            </svg>`,
+            const foliageGeometry = new THREE.ConeGeometry(2, 4, 8);
+            const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x0f1f0f });
+            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+            foliage.position.y = 4;
 
-            offerWeapon: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="pathGlow" x1="0%" y1="50%" x2="100%" y2="50%">
-                        <stop offset="0%" style="stop-color:#1a2a1a;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#4a6a4a;stop-opacity:0.6" />
-                        <stop offset="100%" style="stop-color:#2a4a2a;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <rect width="400" height="250" fill="#0a1a0a"/>
-                <path d="M 0 200 Q 100 190 200 195 T 400 200" stroke="url(#pathGlow)" stroke-width="40" fill="none" opacity="0.5"/>
-                <ellipse cx="80" cy="140" rx="35" ry="55" fill="#0d2a0d"/>
-                <ellipse cx="150" cy="130" rx="40" ry="65" fill="#0d2a0d"/>
-                <ellipse cx="250" cy="135" rx="38" ry="60" fill="#0d2a0d"/>
-                <ellipse cx="320" cy="145" rx="42" ry="58" fill="#0d2a0d"/>
-                <circle cx="350" cy="60" r="30" fill="#ffffcc" opacity="0.4"/>
-                <path d="M 0 220 Q 100 215 200 225 T 400 220 L 400 250 L 0 250 Z" fill="#1a2a1a"/>
-                <text x="200" y="235" font-family="Georgia" font-size="14" fill="#90ee90" text-anchor="middle">The Path to Freedom</text>
-            </svg>`,
+            const tree = new THREE.Group();
+            tree.add(trunk);
+            tree.add(foliage);
+            tree.position.set(x, 2.5, z);
 
-            captureWitch: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="250" fill="#0a0a1a"/>
-                <g id="spirit" opacity="0.6">
-                    <ellipse cx="200" cy="125" rx="40" ry="60" fill="#4a4a6a">
-                        <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/>
-                    </ellipse>
-                    <circle cx="190" cy="110" r="5" fill="#7b7b9b" opacity="0.7">
-                        <animate attributeName="cy" values="110;105;110" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="210" cy="110" r="5" fill="#7b7b9b" opacity="0.7">
-                        <animate attributeName="cy" values="110;105;110" dur="2s" repeatCount="indefinite"/>
-                    </circle>
-                </g>
-                <g id="mist2">
-                    <ellipse cx="150" cy="200" rx="70" ry="20" fill="#2a2a3a" opacity="0.4">
-                        <animate attributeName="rx" values="70;75;70" dur="4s" repeatCount="indefinite"/>
-                    </ellipse>
-                    <ellipse cx="250" cy="210" rx="80" ry="18" fill="#2a2a3a" opacity="0.4">
-                        <animate attributeName="rx" values="80;85;80" dur="5s" repeatCount="indefinite"/>
-                    </ellipse>
-                </g>
-                <text x="200" y="230" font-family="Georgia" font-size="14" fill="#9b9bbb" text-anchor="middle" opacity="0.8">Trapped Forever</text>
-            </svg>`,
+            return tree;
+        }
 
-            enterChapel: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="holyGlow">
-                        <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
-                        <stop offset="100%" style="stop-color:#ffd700;stop-opacity:0" />
-                    </radialGradient>
-                </defs>
-                <rect width="400" height="250" fill="#1a2a1a"/>
-                <circle cx="200" cy="80" r="80" fill="url(#holyGlow)" opacity="0.5"/>
-                <g id="chapel">
-                    <rect x="150" y="120" width="100" height="80" fill="#3a3a3a" stroke="#2a2a2a" stroke-width="2"/>
-                    <path d="M 145 120 L 200 80 L 255 120 Z" fill="#4a4a4a" stroke="#2a2a2a" stroke-width="2"/>
-                    <rect x="185" y="160" width="30" height="40" fill="#2a2a2a"/>
-                    <rect x="170" y="135" width="20" height="15" fill="#ffd700" opacity="0.7">
-                        <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
-                    </rect>
-                    <rect x="210" y="135" width="20" height="15" fill="#ffd700" opacity="0.7">
-                        <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.5s" repeatCount="indefinite"/>
-                    </rect>
-                    <path d="M 195 95 L 195 105 M 190 100 L 200 100" stroke="#ffd700" stroke-width="2"/>
-                </g>
-                <path d="M 0 220 Q 100 215 200 225 T 400 220 L 400 250 L 0 250 Z" fill="#2a3a2a"/>
-                <text x="200" y="235" font-family="Georgia" font-size="14" fill="#ffd700" text-anchor="middle">Victory & Freedom</text>
-            </svg>`,
+        // Create forest
+        const treePositions = [
+            [-8, -5], [-6, -8], [-10, -3], [-12, -7],
+            [8, -5], [6, -8], [10, -3], [12, -7],
+            [-5, -12], [5, -12], [-8, -15], [8, -15],
+            [-3, 5], [3, 5], [-6, 3], [6, 3]
+        ];
 
-            crossBridge: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <rect width="400" height="250" fill="#1a1a2a"/>
-                <g id="chasm">
-                    <rect x="0" y="150" width="400" height="100" fill="#0a0a1a"/>
-                    <ellipse cx="200" cy="200" rx="100" ry="30" fill="#2a2a4a" opacity="0.3">
-                        <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
-                    </ellipse>
-                </g>
-                <g id="bridge">
-                    <line x1="0" y1="140" x2="400" y2="150" stroke="#5a4a3a" stroke-width="3"/>
-                    <line x1="0" y1="148" x2="400" y2="158" stroke="#5a4a3a" stroke-width="3"/>
-                    <line x1="50" y1="142" x2="50" y2="147" stroke="#4a3a2a" stroke-width="2"/>
-                    <line x1="100" y1="143" x2="100" y2="149" stroke="#4a3a2a" stroke-width="2"/>
-                    <line x1="150" y1="145" x2="150" y2="151" stroke="#4a3a2a" stroke-width="2"/>
-                    <line x1="200" y1="146" x2="200" y2="152" stroke="#4a3a2a" stroke-width="2"/>
-                    <line x1="250" y1="147" x2="250" y2="153" stroke="#4a3a2a" stroke-width="2"/>
-                    <line x1="300" y1="148" x2="300" y2="154" stroke="#4a3a2a" stroke-width="2"/>
-                    <line x1="350" y1="149" x2="350" y2="155" stroke="#4a3a2a" stroke-width="2"/>
-                </g>
-                <ellipse cx="350" cy="120" rx="30" ry="50" fill="#2a3a2a"/>
-                <path d="M 350 110 Q 340 100 350 90" fill="#0a1a0a"/>
-                <text x="200" y="50" font-family="Georgia" font-size="14" fill="#add8e6" text-anchor="middle">Determination Triumphs</text>
-            </svg>`,
+        treePositions.forEach(([x, z]) => {
+            const tree = createTree(x, z);
+            trees.push(tree);
+            scene.add(tree);
+        });
 
-            forestEdge: `<svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#0a1a0a;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#4a5a4a;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <rect width="400" height="250" fill="url(#edgeGrad)"/>
-                <ellipse cx="80" cy="140" rx="40" ry="65" fill="#0d2a0d"/>
-                <ellipse cx="50" cy="155" rx="35" ry="55" fill="#0d2a0d"/>
-                <ellipse cx="120" cy="150" rx="38" ry="60" fill="#0d2a0d"/>
-                <path d="M 200 100 Q 250 150 300 200" stroke="#6a7a6a" stroke-width="30" fill="none" opacity="0.4"/>
-                <circle cx="280" cy="180" r="8" fill="#8b7355" opacity="0.7"/>
-                <g id="wolfToken" transform="translate(280, 180)">
-                    <circle cx="0" cy="0" r="6" fill="#5a4a3a"/>
-                    <path d="M -3 -2 L -2 -5 L -1 -3 Z" fill="#3a2a1a"/>
-                    <path d="M 3 -2 L 2 -5 L 1 -3 Z" fill="#3a2a1a"/>
-                </g>
-                <text x="200" y="240" font-family="Georgia" font-size="14" fill="#9b8b7b" text-anchor="middle" opacity="0.8">Marked by the Forest</text>
-            </svg>`
-        };
+        // Particle system for atmosphere
+        const particleCount = 200;
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
 
-        // Story data structure
-        const story = {
-            start: {
-                text: "The forest grows darker with each step. You are a hunter, but now you are the hunted. The tales spoke of a witch who rules these cursed woods, commanding werewolves, spirits, and the undead. Your torch flickers as mist coils around ancient trees. In the distance, you hear a bone-chilling howl. To your left, you spot a faint firelight through the trees. To your right, darkness and shadows offer concealment. What do you do?",
-                choices: [
-                    { text: "Follow the howl — perhaps it's just a wolf, not a werewolf", next: "followHowl" },
-                    { text: "Approach the firelight — someone might be there", next: "approachFire" },
-                    { text: "Hide in the shadows and wait for dawn", next: "hideInShadows" }
-                ],
-                feedback: "",
-                image: "start"
-            },
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            particlePositions[i] = (Math.random() - 0.5) * 50;
+            particlePositions[i + 1] = Math.random() * 20;
+            particlePositions[i + 2] = (Math.random() - 0.5) * 50;
+        }
 
-            followHowl: {
-                text: "Against your better judgment, you move toward the howl. The sound grows louder, more savage. You emerge into a moonlit clearing. There, surrounded by ancient standing stones, stands a massive creature — half-man, half-wolf. Its eyes glow amber in the darkness. It turns to face you, saliva dripping from its fangs. Behind it, you notice a silver pendant hanging from one of the stones, glinting in the moonlight. It might be a weapon, or a curse...",
-                choices: [
-                    { text: "Grab the silver pendant and confront the beast", next: "grabSilver" },
-                    { text: "Run back into the forest", next: "runFromWerewolf" },
-                    { text: "Stand still and try to show you mean no harm", next: "peacefulWerewolf" }
-                ],
-                feedback: "You feel the beast's eyes burning into your soul...",
-                image: "followHowl"
-            },
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            color: 0x6b4c9a,
+            size: 0.1,
+            transparent: true,
+            opacity: 0.6
+        });
 
-            approachFire: {
-                text: "You carefully make your way toward the flickering light. As you draw closer, you see it's a small campfire in a clearing. An old woman sits beside it, stirring a cauldron. She looks up at you with eyes that shine like polished obsidian. 'Lost, are you, hunter?' she cackles. 'I am the Witch of the Forest. You have three choices: drink from my cauldron and gain power, offer me your weapon and I'll show you the way out, or try to take me prisoner and force me to free the forest.'",
-                choices: [
-                    { text: "Drink from the cauldron — power might help you survive", next: "drinkPotion" },
-                    { text: "Offer your weapon for safe passage", next: "offerWeapon" },
-                    { text: "Attempt to capture the witch", next: "captureWitch" }
-                ],
-                feedback: "The witch's smile reveals centuries of dark knowledge...",
-                image: "approachFire"
-            },
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
 
-            hideInShadows: {
-                text: "You crouch low in the underbrush, making yourself as small and silent as possible. Hours pass. The forest comes alive with strange sounds — whispers in languages you don't understand, spectral lights dancing between trees, the shuffle of something dead dragging itself through leaves. As dawn approaches, you see three paths: one leads to a decrepit chapel with a faint glow, another to a rope bridge over a chasm, and the third to what looks like the forest's edge.",
-                choices: [
-                    { text: "Enter the chapel — holy ground might protect you", next: "enterChapel" },
-                    { text: "Cross the rope bridge quickly", next: "crossBridge" },
-                    { text: "Run for the forest's edge", next: "forestEdge" }
-                ],
-                feedback: "The night has tested your patience. Dawn brings new dangers...",
-                image: "hideInShadows"
-            },
+        // Choice orbs
+        const choices = [];
+        const choiceData = [
+            { position: [-3, 2, 2], color: 0xff4444, label: 'Follow howls', emoji: '🐺' },
+            { position: [0, 2, 2], color: 0xff8800, label: 'Approach fire', emoji: '🔥' },
+            { position: [3, 2, 2], color: 0x88ccff, label: 'Enter mist', emoji: '🌫️' }
+        ];
 
-            // Branch outcomes from following the howl
-            grabSilver: {
-                text: "You lunge forward and grab the silver pendant. It burns your hand but you hold on tight. The werewolf roars and charges. You hold up the pendant and it blazes with pure white light. The creature howls in agony and begins to transform back into a man. As he becomes human, he gasps, 'Thank you... the witch cursed me... follow the north star... you can escape...' He collapses, finally at peace. You take the pendant and head north. By morning, you find yourself at the forest's edge, forever changed by what you witnessed.",
-                choices: [],
-                feedback: "The silver burned away the curse...",
-                ending: "Freedom Through Courage",
-                endingText: "You escaped the Witch's Forest with a powerful artifact. The silver pendant now hangs around your neck, a reminder that sometimes bravery means facing the monster head-on.",
-                image: "grabSilver"
-            },
+        choiceData.forEach((data, index) => {
+            const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const material = new THREE.MeshStandardMaterial({
+                color: data.color,
+                emissive: data.color,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.8
+            });
+            const orb = new THREE.Mesh(geometry, material);
+            orb.position.set(...data.position);
+            orb.userData = { index, data, originalY: data.position[1] };
 
-            runFromWerewolf: {
-                text: "You turn and sprint into the darkness. The werewolf gives chase, crashing through the undergrowth behind you. You run blindly until you burst into another clearing. There stands the witch, smiling. 'Running from my pet, are you?' She raises her hand and the werewolf stops at the clearing's edge. 'You have shown cowardice. Now you shall join my pack.' She speaks words of power and agony courses through your body. Your bones crack and reform. Fur sprouts from your skin. Your last human thought is a howl of despair.",
-                choices: [],
-                feedback: "The curse takes hold...",
-                ending: "Cursed to Run Forever",
-                endingText: "You failed to stand your ground. Now you are one of the witch's werewolf servants, doomed to hunt other lost souls in her forest. The hunt never ends.",
-                image: "runFromWerewolf"
-            },
+            // Glow effect
+            const glowGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: data.color,
+                transparent: true,
+                opacity: 0.2
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            orb.add(glow);
 
-            peacefulWerewolf: {
-                text: "You drop your weapon and stand still, hands open. The werewolf approaches, sniffing. For a moment, its eyes show intelligence, humanity even. It nudges your hand gently, then turns and begins walking. You follow, and it leads you through secret paths. By dawn, you reach the forest's edge. The werewolf transforms back into a man — a fellow hunter who was cursed but retained enough humanity to help you. 'Go,' he says. 'And never return.' You stumble out of the forest, grateful to be alive.",
-                choices: [],
-                feedback: "Compassion reveals unexpected allies...",
-                ending: "Mercy Rewarded",
-                endingText: "You survived by trusting in compassion over violence. Not all monsters are evil — some are simply cursed. You escape the forest with your humanity intact.",
-                image: "peacefulWerewolf"
-            },
+            choices.push(orb);
+            scene.add(orb);
+        });
 
-            // Branch outcomes from approaching the fire
-            drinkPotion: {
-                text: "You lift the ladle to your lips and drink the strange brew. It tastes of earth and starlight. Power surges through you — your senses sharpen, your muscles grow stronger. But something else changes too. The witch laughs, 'You have taken my gift, now you are bound to this forest forever!' You feel roots growing from your feet, connecting you to the cursed land. You have become powerful, yes, but you can never leave. You are the forest's new guardian, replacing the witch who finally fades away, her curse passed on.",
-                choices: [],
-                feedback: "Power always has a price...",
-                ending: "The New Guardian",
-                endingText: "You gained immense power but lost your freedom. You are now the Witch's successor, bound to the forest for eternity. Was it worth it?",
-                image: "drinkPotion"
-            },
+        // Raycaster for interaction
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let hoveredChoice = null;
+        let gameState = 'intro';
 
-            offerWeapon: {
-                text: "You carefully place your weapon at the witch's feet. She picks it up, examines it, and nods. 'A fair trade. A hunter who gives up his weapon is a hunter who chooses wisdom over violence.' She points with a gnarled finger. 'Follow that path. Do not stray from it, do not look back, and you will be free by sunrise.' You do as she says. The path is long and winding, and you hear terrible sounds around you, but you keep walking. As the sun rises, you step out of the forest, exhausted but alive and free.",
-                choices: [],
-                feedback: "Sometimes the wisest choice is surrender...",
-                ending: "The Wise Escape",
-                endingText: "You survived by making a peaceful trade. The witch honored her word. You emerged from the forest without your weapon, but with your life and a story few would believe.",
-                image: "offerWeapon"
-            },
+        // Animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
 
-            captureWitch: {
-                text: "You attempt to rush the witch, hoping to overpower her. She simply waves her hand and you freeze in place, unable to move. 'Foolish hunter,' she hisses. 'Did you think me defenseless?' She begins an incantation. You feel your body becoming lighter, transparent. 'You shall join my spirits, serving me for all eternity.' Your body dissolves into mist. You become aware of others like you — spirits trapped in the forest, bound to serve the witch forever. Your consciousness remains, but your body is gone. You are trapped in an endless torment.",
-                choices: [],
-                feedback: "Your aggression has doomed you...",
-                ending: "Spirit of the Forest",
-                endingText: "You attacked the witch and paid the ultimate price. You are now one of the forest spirits, doomed to haunt these woods forever, warning other travelers but unable to help them.",
-                image: "captureWitch"
-            },
-
-            // Branch outcomes from hiding in shadows
-            enterChapel: {
-                text: "You push open the chapel door. Inside, ancient pews are covered in moss. At the altar, you find a blessed silver dagger and a journal. The journal tells of a priest who once banished the witch. It says she can be defeated at her heart-tree in the forest's center at dawn. You have the weapon and the knowledge. You make your way to the heart-tree. There, as the sun rises, you find the witch vulnerable. You strike with the blessed dagger. She shrieks and dissolves into black smoke. The forest begins to change — color returns, birds sing. You've broken the curse and freed the forest.",
-                choices: [],
-                feedback: "Knowledge and faith combined to give you strength...",
-                ending: "The Witch Slayer",
-                endingText: "You have defeated the witch and freed the forest from her curse! You emerge as a hero, having ended decades of terror. The forest is healing, and your name will be remembered in legend.",
-                image: "enterChapel"
-            },
-
-            crossBridge: {
-                text: "You step onto the rope bridge. It sways dangerously over a bottomless chasm filled with swirling mist. Halfway across, you hear a voice behind you: 'Where do you think you're going?' The witch appears at the other end of the bridge. She begins cutting the ropes with a knife. You have seconds to decide. You run forward as fast as you can. Just as the bridge collapses, you leap and barely grab the edge of the cliff. The witch reaches down — but instead of pushing you off, she pulls you up. 'You have spirit, hunter. I respect that. Go.' She vanishes. Confused but grateful, you find your way out of the forest.",
-                choices: [],
-                feedback: "Your determination impressed even the witch...",
-                ending: "Earned Respect",
-                endingText: "Through sheer determination and courage, you earned the witch's respect. She allowed you to leave. You survived not through combat or trickery, but through tenacity.",
-                image: "crossBridge"
-            },
-
-            forestEdge: {
-                text: "You run toward what you hope is the forest's edge. But as you run, the trees seem to move, the path shifts. You're running in circles. Exhaustion takes hold. You collapse and fall unconscious. You wake to find yourself in your own camp, far from the forest, your hunting gear beside you. Was it all a dream? But your clothes are torn, your body is covered in scratches, and around your neck is a small token — a carved wooden wolf. The forest let you go... this time. But you know you were marked. You feel its pull even now, calling you back...",
-                choices: [],
-                feedback: "The forest has marked you...",
-                ending: "The Lucky Escape",
-                endingText: "You escaped, but at what cost? The forest released you, but you carry its mark. You survived, yet you know that one day, you may be called back to the Witch's Forest.",
-                image: "forestEdge"
+            // Animate particles
+            particles.rotation.y += 0.0005;
+            const positions = particles.geometry.attributes.position.array;
+            for (let i = 1; i < positions.length; i += 3) {
+                positions[i] += Math.sin(time + positions[i]) * 0.01;
             }
-        };
+            particles.geometry.attributes.position.needsUpdate = true;
 
-        let currentNode = 'start';
-        let gameActive = true;
+            // Animate orbs
+            if (gameState === 'playing') {
+                choices.forEach((orb, i) => {
+                    orb.position.y = orb.userData.originalY + Math.sin(time * 2 + i) * 0.2;
+                    orb.rotation.y += 0.01;
 
-        function updateStory() {
-            const node = story[currentNode];
-            const storyText = document.getElementById('story-text');
-            const feedback = document.getElementById('feedback');
-            const choices = document.getElementById('choices');
-            const sceneImage = document.getElementById('scene-image');
-
-            // Update scene image
-            if (node.image && sceneImages[node.image]) {
-                sceneImage.style.opacity = '0';
-                setTimeout(() => {
-                    sceneImage.innerHTML = sceneImages[node.image];
-                    sceneImage.style.opacity = '1';
-                }, 300);
-            }
-
-            // Update story text with fade animation
-            storyText.style.opacity = '0';
-            setTimeout(() => {
-                storyText.textContent = node.text;
-                storyText.style.opacity = '1';
-            }, 300);
-
-            // Update feedback
-            feedback.textContent = node.feedback || '';
-
-            // Clear and update choices
-            choices.innerHTML = '';
-
-            if (node.choices && node.choices.length > 0) {
-                node.choices.forEach(choice => {
-                    const button = document.createElement('button');
-                    button.className = 'choice-btn';
-                    button.textContent = choice.text;
-                    button.onclick = () => makeChoice(choice.next);
-                    choices.appendChild(button);
+                    // Pulse glow
+                    const glow = orb.children[0];
+                    if (glow) {
+                        glow.scale.setScalar(1 + Math.sin(time * 3 + i) * 0.1);
+                    }
                 });
-            } else if (node.ending) {
-                // Show ending
-                const endingDiv = document.createElement('div');
-                endingDiv.className = 'ending';
-                endingDiv.innerHTML = `
-                    <h2>${node.ending}</h2>
-                    <p style="color: #e0aaff; margin-top: 10px;">${node.endingText}</p>
-                `;
-                choices.appendChild(endingDiv);
-
-                const restartBtn = document.createElement('button');
-                restartBtn.className = 'restart-btn';
-                restartBtn.textContent = '🔄 Play Again';
-                restartBtn.onclick = restartGame;
-                choices.appendChild(restartBtn);
-
-                gameActive = false;
             }
 
-            // Change background based on story node
-            updateBackground(currentNode);
+            renderer.render(scene, camera);
         }
 
-        function makeChoice(nextNode) {
-            if (!gameActive) return;
-            currentNode = nextNode;
-            updateStory();
-        }
+        // Mouse interaction
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-        function updateBackground(node) {
-            document.body.className = '';
+            if (gameState === 'playing') {
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(choices);
 
-            if (node.includes('werewolf') || node === 'runFromWerewolf' || node === 'captureWitch') {
-                document.body.classList.add('danger');
-            } else if (node === 'grabSilver' || node === 'peacefulWerewolf' || node === 'offerWeapon' || node === 'enterChapel') {
-                document.body.classList.add('hope');
-            } else if (node === 'drinkPotion') {
-                document.body.classList.add('cursed');
+                // Reset previous hover
+                if (hoveredChoice && !intersects.find(i => i.object === hoveredChoice)) {
+                    gsap.to(hoveredChoice.scale, { x: 1, y: 1, z: 1, duration: 0.3 });
+                    hoveredChoice.material.emissiveIntensity = 0.5;
+                    hoveredChoice = null;
+                    document.body.style.cursor = 'crosshair';
+                }
+
+                // New hover
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
+                    if (obj !== hoveredChoice) {
+                        hoveredChoice = obj;
+                        gsap.to(obj.scale, { x: 1.3, y: 1.3, z: 1.3, duration: 0.3 });
+                        obj.material.emissiveIntensity = 1;
+                        document.body.style.cursor = 'pointer';
+                    }
+                }
             }
         }
 
-        function restartGame() {
-            currentNode = 'start';
-            gameActive = true;
-            document.body.className = '';
-            updateStory();
+        function onClick() {
+            if (gameState === 'playing' && hoveredChoice) {
+                const index = hoveredChoice.userData.index;
+                makeChoice(index);
+            }
         }
 
-        // Initialize the game
-        updateStory();
+        // Choice outcomes
+        function makeChoice(index) {
+            gameState = 'ending';
+            document.body.style.cursor = 'crosshair';
+
+            // Hide all choices
+            choices.forEach(orb => {
+                gsap.to(orb.material, { opacity: 0, duration: 0.5 });
+                gsap.to(orb.position, { y: -2, duration: 0.5 });
+            });
+
+            gsap.to('#instructions', { opacity: 0, duration: 0.3 });
+
+            if (index === 0) {
+                // Howls - Werewolf encounter
+                wolfEnding();
+            } else if (index === 1) {
+                // Fire - Witch encounter
+                fireEnding();
+            } else {
+                // Mist - Ghost encounter
+                mistEnding();
+            }
+        }
+
+        function wolfEnding() {
+            // Red moon
+            gsap.to(moonLight.color, { r: 1, g: 0.2, b: 0.2, duration: 2 });
+            gsap.to(moonLight, { intensity: 1.5, duration: 2 });
+            gsap.to(scene.fog, { density: 0.15, duration: 2 });
+
+            // Camera shake and move
+            gsap.to(camera.position, {
+                x: -2,
+                y: 1,
+                z: 6,
+                duration: 2,
+                ease: 'power2.inOut'
+            });
+
+            gsap.to(camera.rotation, {
+                z: 0.1,
+                duration: 0.1,
+                repeat: 10,
+                yoyo: true
+            });
+
+            // Show message
+            setTimeout(() => {
+                showMessage('Hunted...', '#ff4444');
+            }, 2000);
+
+            setTimeout(() => {
+                showRestart();
+            }, 4000);
+        }
+
+        function fireEnding() {
+            // Orange glow
+            const fireLight = new THREE.PointLight(0xff6600, 2, 20);
+            fireLight.position.set(0, 2, -5);
+            scene.add(fireLight);
+
+            gsap.to(ambientLight, { intensity: 0.1, duration: 2 });
+            gsap.to(scene.fog, { density: 0.12, duration: 2 });
+
+            // Animate fire light
+            gsap.to(fireLight, {
+                intensity: 3,
+                duration: 0.5,
+                repeat: 6,
+                yoyo: true
+            });
+
+            // Camera approach
+            gsap.to(camera.position, {
+                z: 4,
+                y: 1.5,
+                duration: 3,
+                ease: 'power2.inOut'
+            });
+
+            // Create witch silhouette
+            const witchGeometry = new THREE.ConeGeometry(0.5, 2, 8);
+            const witchMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const witch = new THREE.Mesh(witchGeometry, witchMaterial);
+            witch.position.set(0, 1, 0);
+            scene.add(witch);
+
+            gsap.from(witch.scale, { x: 0, y: 0, z: 0, duration: 1, delay: 1 });
+
+            setTimeout(() => {
+                showMessage('Enchanted...', '#ff8800');
+            }, 2500);
+
+            setTimeout(() => {
+                showRestart();
+            }, 4500);
+        }
+
+        function mistEnding() {
+            // White fog
+            gsap.to(scene.fog.color, { r: 0.7, g: 0.7, b: 0.8, duration: 2 });
+            gsap.to(scene.fog, { density: 0.25, duration: 2 });
+
+            gsap.to(ambientLight.color, { r: 0.8, g: 0.9, b: 1, duration: 2 });
+            gsap.to(ambientLight, { intensity: 0.8, duration: 2 });
+
+            // Create floating spirits
+            for (let i = 0; i < 5; i++) {
+                const spiritGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+                const spiritMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xccffff,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                const spirit = new THREE.Mesh(spiritGeometry, spiritMaterial);
+                spirit.position.set(
+                    (Math.random() - 0.5) * 10,
+                    Math.random() * 5 + 1,
+                    (Math.random() - 0.5) * 10
+                );
+                scene.add(spirit);
+
+                gsap.to(spirit.position, {
+                    y: spirit.position.y + 5,
+                    duration: 3,
+                    ease: 'power1.inOut'
+                });
+
+                gsap.to(spirit.material, {
+                    opacity: 0,
+                    duration: 3
+                });
+            }
+
+            // Camera rises
+            gsap.to(camera.position, {
+                y: 4,
+                z: 6,
+                duration: 3,
+                ease: 'power2.inOut'
+            });
+
+            setTimeout(() => {
+                showMessage('Lost...', '#88ccff');
+            }, 2000);
+
+            setTimeout(() => {
+                showRestart();
+            }, 4000);
+        }
+
+        function showMessage(text, color) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.style.color = color;
+            gsap.to(msg, { opacity: 1, duration: 1 });
+            gsap.to(msg, { opacity: 0, duration: 1, delay: 1.5 });
+        }
+
+        function showRestart() {
+            document.getElementById('restart').classList.add('visible');
+        }
+
+        // Restart function
+        function restart() {
+            document.getElementById('restart').classList.remove('visible');
+            document.getElementById('message').style.opacity = 0;
+
+            // Reset scene
+            while(scene.children.length > 0) {
+                scene.remove(scene.children[0]);
+            }
+
+            // Reload page (simplest reset)
+            location.reload();
+        }
+
+        // Intro sequence
+        function startIntro() {
+            const title = document.getElementById('title');
+            const instructions = document.getElementById('instructions');
+
+            gsap.to(title, { opacity: 1, duration: 2 });
+            gsap.to(title, { opacity: 0, duration: 1, delay: 3 });
+
+            gsap.to(camera.position, {
+                z: 8,
+                duration: 4,
+                ease: 'power2.inOut'
+            });
+
+            setTimeout(() => {
+                gameState = 'playing';
+                choices.forEach(orb => {
+                    gsap.to(orb.material, { opacity: 0.8, duration: 1 });
+                });
+                gsap.to(instructions, { opacity: 0.7, duration: 1 });
+            }, 4000);
+        }
+
+        // Event listeners
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('click', onClick);
+        document.getElementById('restart').addEventListener('click', restart);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start
+        animate();
+        startIntro();
     </script>
 </body>
 </html>
