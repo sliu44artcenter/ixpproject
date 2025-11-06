@@ -121,13 +121,97 @@
             return tree;
         }
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 50; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const distance = 10 + Math.random() * 20;
+            const distance = 10 + Math.random() * 30;
             const x = Math.cos(angle) * distance;
             const z = Math.sin(angle) * distance;
             scene.add(createTree(x, z));
         }
+
+        // Castle in background
+        const castleGroup = new THREE.Group();
+
+        // Castle base walls
+        const wallMaterial = new THREE.MeshStandardMaterial({
+            color: 0x5a5a5a,
+            roughness: 0.9
+        });
+
+        // Main castle body
+        const mainWall = new THREE.Mesh(
+            new THREE.BoxGeometry(15, 8, 10),
+            wallMaterial
+        );
+        mainWall.position.y = 4;
+        castleGroup.add(mainWall);
+
+        // Left tower
+        const leftTower = new THREE.Mesh(
+            new THREE.CylinderGeometry(2, 2, 12, 8),
+            wallMaterial
+        );
+        leftTower.position.set(-8, 6, 0);
+        castleGroup.add(leftTower);
+
+        // Right tower
+        const rightTower = new THREE.Mesh(
+            new THREE.CylinderGeometry(2, 2, 12, 8),
+            wallMaterial
+        );
+        rightTower.position.set(8, 6, 0);
+        castleGroup.add(rightTower);
+
+        // Center tower (tallest)
+        const centerTower = new THREE.Mesh(
+            new THREE.CylinderGeometry(2.5, 2.5, 15, 8),
+            wallMaterial
+        );
+        centerTower.position.set(0, 7.5, -3);
+        castleGroup.add(centerTower);
+
+        // Tower roofs
+        const roofMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3a3a3a,
+            roughness: 0.8
+        });
+
+        const leftRoof = new THREE.Mesh(
+            new THREE.ConeGeometry(2.5, 3, 8),
+            roofMaterial
+        );
+        leftRoof.position.set(-8, 13.5, 0);
+        castleGroup.add(leftRoof);
+
+        const rightRoof = new THREE.Mesh(
+            new THREE.ConeGeometry(2.5, 3, 8),
+            roofMaterial
+        );
+        rightRoof.position.set(8, 13.5, 0);
+        castleGroup.add(rightRoof);
+
+        const centerRoof = new THREE.Mesh(
+            new THREE.ConeGeometry(3, 4, 8),
+            roofMaterial
+        );
+        centerRoof.position.set(0, 16.5, -3);
+        castleGroup.add(centerRoof);
+
+        // Windows (dark)
+        const windowMaterial = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
+        for (let i = 0; i < 3; i++) {
+            const window1 = new THREE.Mesh(
+                new THREE.BoxGeometry(1, 1.5, 0.2),
+                windowMaterial
+            );
+            window1.position.set(-4 + i * 4, 5 + i, 5.1);
+            castleGroup.add(window1);
+        }
+
+        // Position castle far in the background
+        castleGroup.position.set(5, 0, -40);
+        castleGroup.castShadow = true;
+        scene.add(castleGroup);
 
         // Particles
         const particlesGeometry = new THREE.BufferGeometry();
@@ -150,11 +234,10 @@
         const particles = new THREE.Points(particlesGeometry, particlesMaterial);
         scene.add(particles);
 
-        // Tree Spirit Entity
+        // Tree Spirit Entity with Evil Face
         const treeSpiritGroup = new THREE.Group();
 
         const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.5, 3, 8, 3, false);
-        bodyGeometry.rotateZ(Math.PI * 0.1);
         const bodyMaterial = new THREE.MeshStandardMaterial({
             color: 0x4a3020,
             emissive: 0x2a4a2a,
@@ -172,70 +255,278 @@
         rightArm.position.set(0.6, 0.5, 0);
         rightArm.rotation.z = -Math.PI / 3;
 
+        // Evil face on tree trunk
+        const faceMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a0a,
+            emissive: 0xff4400,
+            emissiveIntensity: 0.5
+        });
+
+        // Evil eyes (glowing)
+        const leftEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 8, 8),
+            faceMaterial
+        );
+        leftEye.position.set(-0.15, 1.2, 0.35);
+
+        const rightEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 8, 8),
+            faceMaterial
+        );
+        rightEye.position.set(0.15, 1.2, 0.35);
+
+        // Evil mouth (wide grin)
+        const mouthGeometry = new THREE.TorusGeometry(0.25, 0.06, 8, 16, Math.PI);
+        mouthGeometry.rotateX(Math.PI);
+        const mouth = new THREE.Mesh(mouthGeometry, faceMaterial);
+        mouth.position.set(0, 0.7, 0.35);
+
+        // Teeth
+        for (let i = 0; i < 5; i++) {
+            const tooth = new THREE.Mesh(
+                new THREE.ConeGeometry(0.04, 0.15, 4),
+                new THREE.MeshStandardMaterial({ color: 0xffffcc })
+            );
+            tooth.position.set(-0.2 + i * 0.1, 0.75, 0.35);
+            tooth.rotation.x = Math.PI;
+            treeSpiritGroup.add(tooth);
+        }
+
         treeSpiritGroup.add(treeBody);
         treeSpiritGroup.add(leftArm);
         treeSpiritGroup.add(rightArm);
-        treeSpiritGroup.position.set(-5, 3, -10);
+        treeSpiritGroup.add(leftEye);
+        treeSpiritGroup.add(rightEye);
+        treeSpiritGroup.add(mouth);
+        treeSpiritGroup.position.set(-10, 3, -10);
         treeSpiritGroup.userData.type = 'treeSpirit';
         scene.add(treeSpiritGroup);
 
-        // Wolf Spirit Entity
+        // Wolf Spirit Entity - Detailed Wolf Shape
         const wolfSpiritGroup = new THREE.Group();
+
+        const wolfMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2a3a4a,
+            emissive: 0x4488ff,
+            emissiveIntensity: 0.6,
+            transparent: true,
+            opacity: 0.85
+        });
+
+        // Wolf body
+        const wolfBody = new THREE.Mesh(
+            new THREE.BoxGeometry(1.5, 0.8, 0.8),
+            wolfMaterial
+        );
+        wolfBody.position.set(0, 0, 0);
+
+        // Wolf head
+        const wolfHead = new THREE.Mesh(
+            new THREE.BoxGeometry(0.6, 0.6, 0.7),
+            wolfMaterial
+        );
+        wolfHead.position.set(0.9, 0.1, 0);
+
+        // Wolf snout
+        const wolfSnout = new THREE.Mesh(
+            new THREE.BoxGeometry(0.4, 0.3, 0.4),
+            wolfMaterial
+        );
+        wolfSnout.position.set(1.3, 0, 0);
+
+        // Wolf ears (pointy)
+        const wolfLeftEar = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15, 0.4, 4),
+            wolfMaterial
+        );
+        wolfLeftEar.position.set(0.9, 0.5, -0.2);
+
+        const wolfRightEar = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15, 0.4, 4),
+            wolfMaterial
+        );
+        wolfRightEar.position.set(0.9, 0.5, 0.2);
+
+        // Wolf eyes (glowing red)
+        const wolfEyeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xff0000,
+            emissive: 0xff3333,
+            emissiveIntensity: 1.0
+        });
+
+        const wolfLeftEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.08, 8, 8),
+            wolfEyeMaterial
+        );
+        wolfLeftEye.position.set(1.15, 0.15, -0.2);
+
+        const wolfRightEye = new THREE.Mesh(
+            new THREE.SphereGeometry(0.08, 8, 8),
+            wolfEyeMaterial
+        );
+        wolfRightEye.position.set(1.15, 0.15, 0.2);
+
+        // Wolf legs
+        const legGeometry = new THREE.CylinderGeometry(0.12, 0.1, 0.8, 6);
+        const wolfFrontLeftLeg = new THREE.Mesh(legGeometry, wolfMaterial);
+        wolfFrontLeftLeg.position.set(0.5, -0.8, -0.3);
+
+        const wolfFrontRightLeg = new THREE.Mesh(legGeometry, wolfMaterial);
+        wolfFrontRightLeg.position.set(0.5, -0.8, 0.3);
+
+        const wolfBackLeftLeg = new THREE.Mesh(legGeometry, wolfMaterial);
+        wolfBackLeftLeg.position.set(-0.5, -0.8, -0.3);
+
+        const wolfBackRightLeg = new THREE.Mesh(legGeometry, wolfMaterial);
+        wolfBackRightLeg.position.set(-0.5, -0.8, 0.3);
+
+        // Wolf tail (curved)
+        const wolfTail = new THREE.Mesh(
+            new THREE.ConeGeometry(0.15, 1, 6),
+            wolfMaterial
+        );
+        wolfTail.position.set(-1, 0.3, 0);
+        wolfTail.rotation.z = Math.PI / 4;
+
+        // Particle aura around wolf
         const wolfParticlesGeometry = new THREE.BufferGeometry();
-        const wolfParticleCount = 150;
+        const wolfParticleCount = 100;
         const wolfPositions = new Float32Array(wolfParticleCount * 3);
 
         for (let i = 0; i < wolfParticleCount * 3; i += 3) {
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.random() * Math.PI;
-            const r = 0.5 + Math.random() * 1.5;
-
-            wolfPositions[i] = r * Math.sin(phi) * Math.cos(theta);
-            wolfPositions[i + 1] = r * Math.sin(phi) * Math.sin(theta) - 0.5;
-            wolfPositions[i + 2] = r * Math.cos(phi);
+            wolfPositions[i] = (Math.random() - 0.5) * 3;
+            wolfPositions[i + 1] = (Math.random() - 0.5) * 2;
+            wolfPositions[i + 2] = (Math.random() - 0.5) * 2;
         }
 
         wolfParticlesGeometry.setAttribute('position', new THREE.BufferAttribute(wolfPositions, 3));
         const wolfParticlesMaterial = new THREE.PointsMaterial({
             color: 0x4488ff,
-            size: 0.15,
+            size: 0.1,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.5,
             blending: THREE.AdditiveBlending
         });
         const wolfParticles = new THREE.Points(wolfParticlesGeometry, wolfParticlesMaterial);
 
-        const wolfHitbox = new THREE.Mesh(
-            new THREE.SphereGeometry(1.5, 8, 8),
-            new THREE.MeshBasicMaterial({ visible: false })
-        );
-
+        wolfSpiritGroup.add(wolfBody);
+        wolfSpiritGroup.add(wolfHead);
+        wolfSpiritGroup.add(wolfSnout);
+        wolfSpiritGroup.add(wolfLeftEar);
+        wolfSpiritGroup.add(wolfRightEar);
+        wolfSpiritGroup.add(wolfLeftEye);
+        wolfSpiritGroup.add(wolfRightEye);
+        wolfSpiritGroup.add(wolfFrontLeftLeg);
+        wolfSpiritGroup.add(wolfFrontRightLeg);
+        wolfSpiritGroup.add(wolfBackLeftLeg);
+        wolfSpiritGroup.add(wolfBackRightLeg);
+        wolfSpiritGroup.add(wolfTail);
         wolfSpiritGroup.add(wolfParticles);
-        wolfSpiritGroup.add(wolfHitbox);
-        wolfSpiritGroup.position.set(5, 2, -10);
+
+        wolfSpiritGroup.position.set(10, 2, -10);
         wolfSpiritGroup.userData.type = 'wolfSpirit';
         scene.add(wolfSpiritGroup);
 
-        // Witch Entity
+        // Witch Entity - Brew Pot with Glowing Green Liquid
         const witchGroup = new THREE.Group();
 
-        const witchGeometry = new THREE.CylinderGeometry(0.3, 0.6, 2.5, 8, 4, true);
-        const witchMaterial = new THREE.MeshStandardMaterial({
-            color: 0xccccff,
-            emissive: 0x8866ff,
-            emissiveIntensity: 0.4,
-            transparent: true,
-            opacity: 0.6
+        // Cauldron/Pot body
+        const potMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2a2a2a,
+            metalness: 0.6,
+            roughness: 0.4
         });
-        const witchBody = new THREE.Mesh(witchGeometry, witchMaterial);
 
-        const headGeometry = new THREE.SphereGeometry(0.4, 8, 8);
-        const witchHead = new THREE.Mesh(headGeometry, witchMaterial);
-        witchHead.position.y = 1.7;
+        const potBody = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.6, 0.5, 1.2, 16),
+            potMaterial
+        );
+        potBody.position.y = 0.6;
 
-        witchGroup.add(witchBody);
-        witchGroup.add(witchHead);
-        witchGroup.position.set(0, 3, -12);
+        // Pot rim
+        const potRim = new THREE.Mesh(
+            new THREE.TorusGeometry(0.65, 0.08, 8, 16),
+            potMaterial
+        );
+        potRim.position.y = 1.2;
+        potRim.rotation.x = Math.PI / 2;
+
+        // Pot legs (3 legs)
+        const legMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            metalness: 0.7,
+            roughness: 0.3
+        });
+
+        for (let i = 0; i < 3; i++) {
+            const angle = (i / 3) * Math.PI * 2;
+            const potLeg = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08, 0.06, 0.5, 6),
+                legMaterial
+            );
+            potLeg.position.set(
+                Math.cos(angle) * 0.4,
+                -0.25,
+                Math.sin(angle) * 0.4
+            );
+            potLeg.rotation.z = Math.cos(angle) * 0.2;
+            potLeg.rotation.x = Math.sin(angle) * 0.2;
+            witchGroup.add(potLeg);
+        }
+
+        // Glowing green liquid
+        const liquidMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ff00,
+            emissive: 0x00ff44,
+            emissiveIntensity: 0.8,
+            transparent: true,
+            opacity: 0.7
+        });
+
+        const liquid = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.55, 0.48, 0.6, 16),
+            liquidMaterial
+        );
+        liquid.position.y = 0.9;
+
+        // Bubbles/steam particles rising from pot
+        const bubbleGeometry = new THREE.BufferGeometry();
+        const bubbleCount = 30;
+        const bubblePositions = new Float32Array(bubbleCount * 3);
+
+        for (let i = 0; i < bubbleCount * 3; i += 3) {
+            bubblePositions[i] = (Math.random() - 0.5) * 0.6;
+            bubblePositions[i + 1] = 1.2 + Math.random() * 1.5;
+            bubblePositions[i + 2] = (Math.random() - 0.5) * 0.6;
+        }
+
+        bubbleGeometry.setAttribute('position', new THREE.BufferAttribute(bubblePositions, 3));
+        const bubbleMaterial = new THREE.PointsMaterial({
+            color: 0x88ff88,
+            size: 0.12,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+        const bubbles = new THREE.Points(bubbleGeometry, bubbleMaterial);
+
+        // Pot handles
+        const handleGeometry = new THREE.TorusGeometry(0.25, 0.06, 8, 16, Math.PI);
+        const leftHandle = new THREE.Mesh(handleGeometry, potMaterial);
+        leftHandle.position.set(-0.6, 0.8, 0);
+        leftHandle.rotation.y = -Math.PI / 2;
+
+        const rightHandle = new THREE.Mesh(handleGeometry, potMaterial);
+        rightHandle.position.set(0.6, 0.8, 0);
+        rightHandle.rotation.y = Math.PI / 2;
+
+        witchGroup.add(potBody);
+        witchGroup.add(potRim);
+        witchGroup.add(liquid);
+        witchGroup.add(bubbles);
+        witchGroup.add(leftHandle);
+        witchGroup.add(rightHandle);
+        witchGroup.position.set(0, 2, -12);
         witchGroup.userData.type = 'witch';
         scene.add(witchGroup);
 
@@ -414,15 +705,44 @@
             treeSpiritGroup.rotation.y = Math.sin(time * 0.3) * 0.1;
 
             wolfSpiritGroup.position.y = 2 + Math.sin(time * 0.9) * 0.2;
-            const wolfPos = wolfSpiritGroup.children[0].geometry.attributes.position.array;
-            for (let i = 0; i < wolfPos.length; i += 3) {
-                wolfPos[i] += Math.sin(time + i) * 0.002;
-                wolfPos[i + 1] += Math.cos(time + i) * 0.002;
-            }
-            wolfSpiritGroup.children[0].geometry.attributes.position.needsUpdate = true;
+            wolfSpiritGroup.rotation.y = Math.sin(time * 0.4) * 0.2;
 
-            witchGroup.position.y = 3 + Math.sin(time * 0.6) * 0.25;
-            witchGroup.rotation.y = Math.sin(time * 0.2) * 0.15;
+            // Animate wolf particle aura (last child in group)
+            const wolfParticleChild = wolfSpiritGroup.children[wolfSpiritGroup.children.length - 1];
+            if (wolfParticleChild && wolfParticleChild.geometry && wolfParticleChild.geometry.attributes.position) {
+                const wolfPos = wolfParticleChild.geometry.attributes.position.array;
+                for (let i = 0; i < wolfPos.length; i += 3) {
+                    wolfPos[i] += Math.sin(time + i) * 0.002;
+                    wolfPos[i + 1] += Math.cos(time + i) * 0.002;
+                }
+                wolfParticleChild.geometry.attributes.position.needsUpdate = true;
+            }
+
+            witchGroup.position.y = 2 + Math.sin(time * 0.6) * 0.25;
+
+            // Animate bubbles rising from brew pot
+            const bubbleChild = witchGroup.children.find(child => child.type === 'Points');
+            if (bubbleChild && bubbleChild.geometry && bubbleChild.geometry.attributes.position) {
+                const bubblePos = bubbleChild.geometry.attributes.position.array;
+                for (let i = 1; i < bubblePos.length; i += 3) {
+                    bubblePos[i] += 0.01;
+                    // Reset bubble when it goes too high
+                    if (bubblePos[i] > 3.5) {
+                        bubblePos[i] = 1.2;
+                        bubblePos[i - 1] = (Math.random() - 0.5) * 0.6;
+                        bubblePos[i + 1] = (Math.random() - 0.5) * 0.6;
+                    }
+                }
+                bubbleChild.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Animate liquid glow
+            const liquidChild = witchGroup.children.find(child =>
+                child.material && child.material.emissive && child.material.color.r === 0
+            );
+            if (liquidChild) {
+                liquidChild.material.emissiveIntensity = 0.8 + Math.sin(time * 2) * 0.2;
+            }
 
             // Raycasting
             if (!interactionLocked) {
